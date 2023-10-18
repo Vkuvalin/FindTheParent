@@ -42,7 +42,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.kuvalin.findtheparent.R
-import kotlin.random.Random
 
 // Что здесь осталось доделать:
 /*

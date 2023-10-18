@@ -8,7 +8,7 @@ class CardList {
 
         val number = Random.nextInt(2)
 
-        val collection1 = listOf(
+        val collection1 = listOf( // 14
             R.drawable.papa,
             R.drawable.mama,
             R.drawable.style_3_bear,
@@ -26,7 +26,7 @@ class CardList {
             R.drawable.style_3_pig,
             R.drawable.style_3_snake,
         )
-        val collection2 = listOf(
+        val collection2 = listOf( // 14
             R.drawable.papa,
             R.drawable.mama,
             R.drawable.style_2_bear,
@@ -43,6 +43,28 @@ class CardList {
             R.drawable.style_2_mouse,
             R.drawable.style_2_pig,
             R.drawable.style_2_snake,
+        )
+
+        val collection3 = listOf( // 16
+            R.drawable.papa,
+            R.drawable.mama,
+            R.drawable.style_1_camel,
+            R.drawable.style_1_cat,
+            R.drawable.style_1_cow,
+            R.drawable.style_1_deer,
+            R.drawable.style_1_duck,
+            R.drawable.style_1_elephant,
+            R.drawable.style_1_fish,
+            R.drawable.style_1_flamingo,
+            R.drawable.style_1_fox,
+            R.drawable.style_1_lion,
+            R.drawable.style_1_monkey,
+            R.drawable.style_1_panda,
+            R.drawable.style_1_pig,
+            R.drawable.style_1_pigeon,
+            R.drawable.style_1_rat,
+            R.drawable.style_1_tiger,
+            R.drawable.style_1_turtle
         )
 
         return if (number == 1) collection1.shuffled() else collection2.shuffled()
