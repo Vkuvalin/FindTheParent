@@ -25,6 +25,8 @@ sealed class CardStyleState() {
 }
 
 
+
+
 class CardList {
 
     private val cardStyleState = CardStyleState.cardStyleState

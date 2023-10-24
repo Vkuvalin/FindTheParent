@@ -1,11 +1,13 @@
-package com.kuvalin.findtheparent.domain.entity
+package com.kuvalin.findtheparent.data.model
 
-import com.kuvalin.findtheparent.data.CardStyle
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardType
 
-
-data class Card(
+@Entity("card_items")
+data class CardDbModel(
+    @PrimaryKey(autoGenerate = true)
     val id: Int,
     val resourceId: Int,
     val style: CardStyle = CardStyle.STYLE1,

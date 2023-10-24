@@ -6,7 +6,7 @@ import com.kuvalin.findtheparent.domain.repository.CardListRepository
 class AddCardStyleStateUseCase(
     private val cardListRepository: CardListRepository
 ) {
-    fun addCardStyleState(style: CardStyleState){
-        cardListRepository.addCardStyleState(style)
+    fun addCardStyleState(cardStyleState: CardStyleState){
+        cardListRepository.addCardStyleState(cardStyleState)
     }
 }

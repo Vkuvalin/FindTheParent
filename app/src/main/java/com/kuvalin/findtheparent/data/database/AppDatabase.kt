@@ -1,14 +1,18 @@
-package com.kuvalin.findtheparent.data
+package com.kuvalin.findtheparent.data.database
 
 import android.app.Application
+import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.kuvalin.findtheparent.data.model.CardDbModel
+import com.kuvalin.findtheparent.data.model.CardStyleStateDbModel
+import com.kuvalin.findtheparent.data.model.ScoreDbModel
 
 
-//@Database(entities = [ShopItemDbModel::class], version = 1, exportSchema = false)
+@Database(entities = [CardDbModel::class, ScoreDbModel::class, CardStyleStateDbModel::class], version = 1, exportSchema = false)
 abstract class AppDatabase: RoomDatabase() {
 
-//    abstract fun cardListDao(): CardListDao
+    abstract fun cardListDao(): CardListDao
 
     companion object {
 

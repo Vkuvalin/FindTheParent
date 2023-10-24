@@ -1,12 +1,13 @@
 package com.kuvalin.findtheparent.domain.usecase
 
-import com.kuvalin.findtheparent.domain.entity.Card
+
 import com.kuvalin.findtheparent.domain.repository.CardListRepository
+import com.kuvalin.findtheparent.generals.CardType
 
 class GetFatherPhotoCardUseCase(
     private val cardListRepository: CardListRepository
 ) {
-    fun getFatherPhotoCardUseCase(card: Card): Int {
-        return cardListRepository.getFatherPhotoCardUseCase(card)
+    fun getFatherPhotoCardUseCase(type: CardType): Int {
+        return cardListRepository.getFatherPhotoCardUseCase(type)
     }
 }
