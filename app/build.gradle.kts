@@ -1,6 +1,9 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id ("kotlin-parcelize") // @Parcelize  // kotlinx.parcelize
+    id ("kotlin-kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -35,7 +38,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+//        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
     buildFeatures {
         compose = true
@@ -50,11 +54,63 @@ android {
     }
 }
 
+
+
+kotlin {
+    jvmToolchain(8)
+}
+
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.9.0")
+    //region Dagger
+    implementation ("com.google.dagger:dagger:2.43.2")
+//    annotationProcessor ("com.google.dagger:dagger-compiler:2.43.2")
+    kapt ("com.google.dagger:dagger-compiler:2.43.2")
+    //endregion
+
+    //region JetPack Navigation
+    implementation ("androidx.navigation:navigation-compose:2.5.3")
+    //endregion
+
+    //region Coroutines
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    //endregion
+
+    //region ROOM
+    val room_version = "2.5.2"
+    //noinspection GradleDependency
+    implementation ("androidx.room:room-runtime:$room_version")
+    //noinspection GradleDependency
+    implementation ("androidx.room:room-ktx:$room_version")
+    kapt ("androidx.room:room-compiler:2.6.0")
+    //endregion
+
+    //region Glide
+    implementation ("com.github.bumptech.glide:glide:4.15.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.15.0")
+    //endregion
+
+    //region Picasso
+    implementation ("com.squareup.picasso:picasso:2.8")
+    //endregion
+
+    //region Architecture components
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
+    //endregion
+
+    //region Не классифицированные
+    implementation ("io.coil-kt:coil-compose:2.1.0")
+    implementation ("com.google.code.gson:gson:2.10")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    //endregion
+
+
+    implementation("androidx.core:core-ktx:1.10.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.activity:activity-compose:1.7.2")
+    implementation("androidx.activity:activity-compose:1.6.1")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")

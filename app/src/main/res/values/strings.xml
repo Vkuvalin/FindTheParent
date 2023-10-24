@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">FindTheParent</string>
+    <string name="GameScore">СЧЁТ:</string>
+    <string name="cardStyle_1">Style 1</string>
+    <string name="cardStyle_2">Style 2</string>
+    <string name="cardStyle_3">Style 3</string>
 </resources>

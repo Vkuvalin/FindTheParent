@@ -21,7 +21,8 @@ val White = Color(0xFFECAB32)
 val Purple1 = Color(0xFF391B8F)
 
 
-val ParentRed = Color(0xFFFE40FE)
+val ParentRed = Color(0xFFFE00FE)
 val ParentBlue = Color(0xFF00FEFE)
 
 val Alpha0 = Color(0xFFFFFF)
+val WhiteAppBackground = Color(0xFFF9F9F9)

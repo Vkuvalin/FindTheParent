@@ -1,4 +1,4 @@
-package com.kuvalin.findtheparent.ui.screens
+package com.kuvalin.findtheparent.presentation.welcome
 
 
 import android.graphics.Paint
@@ -19,6 +19,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.with
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kuvalin.findtheparent.ui.theme.WhiteAppBackground
 import com.kuvalin.findtheparent.ui.theme.Beige
 import com.kuvalin.findtheparent.ui.theme.Blue
 import com.kuvalin.findtheparent.ui.theme.Orange
@@ -386,7 +388,11 @@ fun BrainScreenAnimation(onStartMainMenuClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .clickable(enabled = isBrainAnimationEnd) {
+            .clickable(
+                enabled = isBrainAnimationEnd,
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
                 if (isBrainAnimationEnd) {
                     onStartMainMenuClick()
                 }
@@ -779,8 +785,8 @@ fun LetterS(firstTranslateCoordinatesAnimation: Dp, secondTranslateCoordinatesAn
             center = Offset(firstPositionX, firstPositionY - 25.dp.toPx()),
             brush = Brush.linearGradient(
                 colors = listOf(Color.Magenta, Color.Cyan, Orange),
-                start = Offset(0.dp.toPx(), 0.dp.toPx()),
-                end = Offset(150.dp.toPx(), 0.dp.toPx()),
+                start = Offset(200.dp.toPx(), 120.dp.toPx()),
+                end = Offset(120.dp.toPx(), 0.dp.toPx()),
                 tileMode = TileMode.Mirror
             ),
             radius = 50.dp.toPx(),
@@ -791,8 +797,8 @@ fun LetterS(firstTranslateCoordinatesAnimation: Dp, secondTranslateCoordinatesAn
             center = Offset(firstPositionX, firstPositionY + 25.dp.toPx()),
             brush = Brush.linearGradient(
                 colors = listOf(Color.Magenta, Color.Cyan, Orange),
-                start = Offset(0.dp.toPx(), 0.dp.toPx()),
-                end = Offset(0.dp.toPx(), 150.dp.toPx()),
+                start = Offset(200.dp.toPx(), 120.dp.toPx()),
+                end = Offset(120.dp.toPx(), 0.dp.toPx()),
                 tileMode = TileMode.Mirror
             ),
             radius = 50.dp.toPx(),
@@ -802,14 +808,14 @@ fun LetterS(firstTranslateCoordinatesAnimation: Dp, secondTranslateCoordinatesAn
 
         drawCircle(
             center = Offset(firstPositionX, firstPositionY + 35.dp.toPx()),
-            color = Color.White,
+            color = WhiteAppBackground,
             radius = 15.dp.toPx(),
             style = Fill
         )
 
         drawCircle(
             center = Offset(firstPositionX, firstPositionY - 35.dp.toPx()),
-            color = Color.White,
+            color = WhiteAppBackground,
             radius = 15.dp.toPx(),
             style = Fill
         )
@@ -827,7 +833,7 @@ fun LetterS(firstTranslateCoordinatesAnimation: Dp, secondTranslateCoordinatesAn
                 lineTo(firstPositionX - 11.dp.toPx(), firstPositionY - 24.dp.toPx())
                 lineTo(firstPositionX + 10.dp.toPx(), firstPositionY - 45.dp.toPx())
             },
-            color = Color.White,
+            color = WhiteAppBackground,
             style = Fill,
         )
 
@@ -841,7 +847,7 @@ fun LetterS(firstTranslateCoordinatesAnimation: Dp, secondTranslateCoordinatesAn
                 lineTo(firstPositionX + 11.dp.toPx(), firstPositionY + 24.dp.toPx())
                 lineTo(firstPositionX - 10.dp.toPx(), firstPositionY + 45.dp.toPx())
             },
-            color = Color.White,
+            color = WhiteAppBackground,
             style = Fill,
         )
     }
@@ -863,8 +869,8 @@ fun LetterU(firstTranslateCoordinatesAnimation: Dp, secondTranslateCoordinatesAn
             center = Offset(firstPositionX + 127.5.dp.toPx(), firstPositionY + 25.dp.toPx()),
             brush = Brush.linearGradient(
                 colors = listOf(Yellow, Color.Magenta, Color.Cyan),
-                start = Offset(200.dp.toPx(), 0.dp.toPx()),
-                end = Offset(200.dp.toPx(), 200.dp.toPx()),
+                start = Offset(200.dp.toPx(), 120.dp.toPx()),
+                end = Offset(120.dp.toPx(), 0.dp.toPx()),
                 tileMode = TileMode.Mirror
             ),
             radius = 50.dp.toPx(),
@@ -936,7 +942,7 @@ fun LetterU(firstTranslateCoordinatesAnimation: Dp, secondTranslateCoordinatesAn
 
         drawCircle(
             center = Offset(firstPositionX + 127.5.dp.toPx(), firstPositionY + 25.dp.toPx()),
-            color = Color.White,
+            color = WhiteAppBackground,
             radius = 20.dp.toPx(),
             style = Fill
         )
@@ -946,7 +952,7 @@ fun LetterU(firstTranslateCoordinatesAnimation: Dp, secondTranslateCoordinatesAn
                 moveTo(firstPositionX + 127.5.dp.toPx(), firstPositionY + 25.dp.toPx())
                 lineTo(firstPositionX + 127.5.dp.toPx(), firstPositionY - 75.dp.toPx())
             },
-            color = Color.White,
+            color = WhiteAppBackground,
             style = Stroke(width = 40.dp.toPx()),
         )
     }
