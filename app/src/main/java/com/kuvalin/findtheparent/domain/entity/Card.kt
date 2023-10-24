@@ -1,6 +1,5 @@
 package com.kuvalin.findtheparent.domain.entity
 
-import com.kuvalin.findtheparent.data.CardStyle
 import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardType
 

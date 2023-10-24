@@ -1,10 +1,10 @@
 package com.kuvalin.findtheparent.domain.repository
 
 import androidx.lifecycle.LiveData
-import com.kuvalin.findtheparent.data.CardStyle
 import com.kuvalin.findtheparent.data.CardStyleState
 import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.domain.entity.Score
+import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardType
 
 interface CardListRepository {
