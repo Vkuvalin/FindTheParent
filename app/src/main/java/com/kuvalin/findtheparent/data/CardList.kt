@@ -2,7 +2,7 @@ package com.kuvalin.findtheparent.data
 
 
 import com.kuvalin.findtheparent.R
-import com.kuvalin.findtheparent.presentation.mainmenu.Card
+import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

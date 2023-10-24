@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.R
 import com.kuvalin.findtheparent.generals.OnBackPressButton
-import com.kuvalin.findtheparent.presentation.mainmenu.Card
+import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsState
 import com.kuvalin.findtheparent.presentation.welcome.toPx
 import com.kuvalin.findtheparent.ui.theme.ParentBlue

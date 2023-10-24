@@ -1,7 +1,7 @@
 package com.kuvalin.findtheparent.navigation
 
 
-import com.kuvalin.findtheparent.presentation.mainmenu.Card
+import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.data.CardList
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsState
 import kotlinx.coroutines.flow.MutableStateFlow

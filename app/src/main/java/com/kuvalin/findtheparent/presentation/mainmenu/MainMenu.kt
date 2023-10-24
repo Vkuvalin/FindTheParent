@@ -215,7 +215,20 @@ fun DropDownMenuStyleCard() {
         stringResource(R.string.cardStyle_3)
     )
     var expanded by remember { mutableStateOf(false) }
-    var selected by rememberSaveable { mutableStateOf(items[0]) }
+    // Как ещё можно обыграть? + Должно тянуть из базы. Можно в сам стейт установить же!
+    var selected by rememberSaveable { mutableStateOf(
+        when(CardStyleState.cardStyleState.value) {
+            is CardStyleState.Style1 -> {
+                items[0]
+            }
+            is CardStyleState.Style2 -> {
+                items[1]
+            }
+            is CardStyleState.Style3 -> {
+                items[2]
+            }
+        }
+    ) }
 
     // ExposedDropdownMenu Colors
     val contentColor = Color(0xFF6E3CC5)
