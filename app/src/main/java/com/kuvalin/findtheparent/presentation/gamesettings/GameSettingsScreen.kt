@@ -1,5 +1,6 @@
 package com.kuvalin.findtheparent.presentation.gamesettings
 
+import android.content.Context
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
@@ -33,26 +34,50 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight.Companion.W700
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
+import com.kuvalin.findtheparent.domain.entity.Card
+import com.kuvalin.findtheparent.domain.usecase.GetCardListUseCase
+import com.kuvalin.findtheparent.generals.CardStyle
+import com.kuvalin.findtheparent.generals.CardStyleState
+import com.kuvalin.findtheparent.generals.CardType
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.generals.NoRippleTheme
 import com.kuvalin.findtheparent.generals.OnBackPressButton
 import com.kuvalin.findtheparent.presentation.welcome.toPx
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 
 enum class ButtonType {
     INIT, EASY, MEDIUM, HARD, SPECIAL
 }
+
 var buttonType = ButtonType.INIT
+
+suspend fun getCardList(context: Context, gameSettingsState: GameSettingsState): List<Card>{
+    return GetCardListUseCase(CardListRepositoryImpl(context))(
+        style = when(CardStyleState.cardStyleState.value){
+            is CardStyleState.Style1 -> { CardStyle.STYLE1 }
+            is CardStyleState.Style2 -> { CardStyle.STYLE2 }
+            is CardStyleState.Style3 -> { CardStyle.STYLE3 }
+        },
+        type = CardType.NORMAL,
+        gameSettingsState = gameSettingsState
+    )
+}
+
 
 @Composable
 fun GameSettingsMenu(
     onBackPress: () -> Unit
 ) {
 
+    val context = LocalContext.current
 
     //region ColorsButtonAnimation
     // Easy
@@ -268,26 +293,59 @@ fun GameSettingsMenu(
         when (buttonType) {
             ButtonType.INIT -> {}
             ButtonType.EASY -> {
-                AppNavigationScreens.putScreenState(AppNavigationScreens.Game(gameSettingsState = GameSettingsState.Easy))
+                AppNavigationScreens.putScreenState(
+                    AppNavigationScreens.Game(
+                        context = context,
+                        gameSettingsState = GameSettingsState.Easy,
+                        cardList = getCardList(context, GameSettingsState.Easy)
+                    )
+                )
             }
+
             ButtonType.MEDIUM -> {
-                AppNavigationScreens.putScreenState(AppNavigationScreens.Game(gameSettingsState = GameSettingsState.Medium))
+                AppNavigationScreens.putScreenState(
+                    AppNavigationScreens.Game(
+                        context = context,
+                        gameSettingsState = GameSettingsState.Medium,
+                        cardList = getCardList(context, GameSettingsState.Medium)
+                    )
+                )
             }
+
             ButtonType.HARD -> {
-                AppNavigationScreens.putScreenState(AppNavigationScreens.Game(gameSettingsState = GameSettingsState.Hard))
+                AppNavigationScreens.putScreenState(
+                    AppNavigationScreens.Game(
+                        context = context,
+                        gameSettingsState = GameSettingsState.Hard,
+                        cardList = getCardList(context, GameSettingsState.Hard)
+                    )
+                )
             }
+
             ButtonType.SPECIAL -> {
-                AppNavigationScreens.putScreenState(AppNavigationScreens.Game(gameSettingsState = GameSettingsState.Special))
+                AppNavigationScreens.putScreenState(
+                    AppNavigationScreens.Game(
+                        context = context,
+                        gameSettingsState = GameSettingsState.Special,
+                        cardList = getCardList(context, GameSettingsState.Special)
+                    )
+                )
             }
         }
         buttonType = ButtonType.INIT
+
     }
 
 }
 
 
 @Composable
-fun ColorsButton(text: String, firstTranslateAnimationX: Dp, secondTranslateAnimationX: Dp, typeButton: ButtonType) {
+fun ColorsButton(
+    text: String,
+    firstTranslateAnimationX: Dp,
+    secondTranslateAnimationX: Dp,
+    typeButton: ButtonType
+) {
     Button(
         modifier = Modifier
             .fillMaxWidth()
@@ -314,9 +372,9 @@ fun ColorsButton(text: String, firstTranslateAnimationX: Dp, secondTranslateAnim
     }
 }
 
-suspend fun onWaitClickButton(){
+suspend fun onWaitClickButton() {
     while (true) {
-        if (buttonType == ButtonType.INIT){
+        if (buttonType == ButtonType.INIT) {
             delay(200)
         } else {
             break

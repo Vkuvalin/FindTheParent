@@ -6,8 +6,5 @@ import com.kuvalin.findtheparent.domain.repository.CardListRepository
 class GetGameScoreUseCase(
     private val cardListRepository: CardListRepository
 ) {
-
-    fun getGameScoreUseCase(): Score {
-        return cardListRepository.getGameScoreUseCase()
-    }
+    suspend operator fun invoke(): Score = cardListRepository.getGameScore()
 }

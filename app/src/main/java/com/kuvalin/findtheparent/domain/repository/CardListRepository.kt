@@ -1,31 +1,34 @@
 package com.kuvalin.findtheparent.domain.repository
 
-import androidx.lifecycle.LiveData
-import com.kuvalin.findtheparent.data.CardStyleState
 import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.domain.entity.Score
 import com.kuvalin.findtheparent.generals.CardStyle
+import com.kuvalin.findtheparent.generals.CardStyleState
 import com.kuvalin.findtheparent.generals.CardType
+import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsState
 
 interface CardListRepository {
 
-    fun addGameScoreUseCase(score: Score)
-    fun getGameScoreUseCase(): Score
+    suspend fun addGameScore(score: Score)
+    suspend fun getGameScore(): Score
 
 
-    fun addCardStyleState(cardStyleState: CardStyleState) // А это же мне нужно, да?
-    fun getCardStyleState(): CardStyleState // А это же мне нужно, да?
+    suspend fun addCardStyleState(cardStyleState: CardStyleState) // А это же мне нужно, да?
+    suspend fun getCardStyleState(): CardStyleState // А это же мне нужно, да?
 
 
-    fun addCardList(style: CardStyle, type: CardType) // private
-    fun getCardList(style: CardStyle, type: CardType): LiveData<List<Card>>
+    suspend fun getCardList(
+        style: CardStyle,
+        type: CardType,
+        gameSettingsState: GameSettingsState
+    ): List<Card>
 
 
-    fun addMatherPhotoCardUseCase(resId: Int)
-    fun getMatherPhotoCardUseCase(type: CardType): Int
+    suspend fun addMatherPhotoCard(resId: Int)
+    suspend fun getMatherPhotoCard(type: CardType): Card
 
 
-    fun addFatherPhotoCardUseCase(resId: Int)
-    fun getFatherPhotoCardUseCase(type: CardType): Int
+    suspend fun addFatherPhotoCard(resId: Int)
+    suspend fun getFatherPhotoCard(type: CardType): Card
 
 }

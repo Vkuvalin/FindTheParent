@@ -1,6 +1,8 @@
 package com.kuvalin.findtheparent.presentation.mainmenu
 
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -50,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -57,13 +60,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight.Companion.W500
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kuvalin.findtheparent.navigation.AppNavigationScreens
-import com.kuvalin.findtheparent.generals.NoRippleTheme
 import com.kuvalin.findtheparent.R
-import com.kuvalin.findtheparent.data.CardStyleState
+import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
+import com.kuvalin.findtheparent.domain.usecase.GetCardStyleStateUseCase
+import com.kuvalin.findtheparent.generals.CardStyleState
+import com.kuvalin.findtheparent.generals.NoRippleTheme
+import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.presentation.welcome.toPx
 import com.kuvalin.findtheparent.ui.theme.ParentBlue
 import com.kuvalin.findtheparent.ui.theme.ParentRed
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.lang.RuntimeException
 
 
 // На тему удаления тени при нажатии и тп
@@ -205,93 +214,129 @@ fun MainMenu() {
 
 
 //region DropDownMenuStyleCard
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropDownMenuStyleCard() {
 
-    val items = listOf(
-        stringResource(R.string.cardStyle_1),
-        stringResource(R.string.cardStyle_2),
-        stringResource(R.string.cardStyle_3)
-    )
-    var expanded by remember { mutableStateOf(false) }
-    // Как ещё можно обыграть? + Должно тянуть из базы. Можно в сам стейт установить же!
-    var selected by rememberSaveable { mutableStateOf(
-        when(CardStyleState.cardStyleState.value) {
-            is CardStyleState.Style1 -> {
-                items[0]
-            }
-            is CardStyleState.Style2 -> {
-                items[1]
-            }
-            is CardStyleState.Style3 -> {
-                items[2]
-            }
-        }
-    ) }
+    val context = LocalContext.current
+    val scope = CoroutineScope(Dispatchers.IO)
+    var loadStyleComplete by remember { mutableStateOf(false) }
+    var initLoad by remember { mutableStateOf(false) }
 
-    // ExposedDropdownMenu Colors
-    val contentColor = Color(0xFF6E3CC5)
-
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
-    ) {
-        TextField(
-            readOnly = true,
-            value = selected,
-            onValueChange = {},
-            label = { Text("Стиль карточек") },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults
-                    .TrailingIcon(
-                        expanded = expanded
-                    )
-            },
-            modifier = Modifier.menuAnchor(),
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.Black,
-                containerColor = Color.White,
-                cursorColor = contentColor,
-                focusedIndicatorColor = contentColor,
-                unfocusedIndicatorColor = Color.Gray,
-                focusedTrailingIconColor = contentColor,
-                unfocusedTrailingIconColor = Color.Gray,
-                focusedLabelColor = contentColor,
-                unfocusedLabelColor = Color.Black
-            )
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            items.forEach { item ->
-                DropdownMenuItem(
-                    text = { Text(item) },
-                    onClick = {
-                        when (item) {
-                            items[0] -> {
-                                CardStyleState.putCardStyleState(CardStyleState.Style1)
-                            }
-
-                            items[1] -> {
-                                CardStyleState.putCardStyleState(CardStyleState.Style2)
-                            }
-
-                            items[2] -> {
-                                CardStyleState.putCardStyleState(CardStyleState.Style3)
-                            }
-                        }
-                        selected = item
-                        expanded = false
-                    },
-                    colors = MenuDefaults.itemColors(
-                        textColor = contentColor,
-                        leadingIconColor = contentColor,
-                        trailingIconColor = contentColor,
-                    )
+    if (!loadStyleComplete) {
+        scope.launch {
+            try {
+                CardStyleState.putCardStyleState(
+                    GetCardStyleStateUseCase(CardListRepositoryImpl(context)).invoke(),
+                    context
                 )
+                loadStyleComplete = true
+            } catch (e: Exception) { initLoad = true}
+        }
+    }
+
+    if (loadStyleComplete || initLoad) {
+
+        val items = listOf(
+            stringResource(R.string.cardStyle_1),
+            stringResource(R.string.cardStyle_2),
+            stringResource(R.string.cardStyle_3)
+        )
+        var expanded by remember { mutableStateOf(false) }
+        // Как ещё можно обыграть? + Должно тянуть из базы. Можно в сам стейт установить же!
+        var selected by rememberSaveable {
+            mutableStateOf(
+                when (CardStyleState.cardStyleState.value) {
+                    is CardStyleState.Style1 -> {
+                        items[0]
+                    }
+
+                    is CardStyleState.Style2 -> {
+                        items[1]
+                    }
+
+                    is CardStyleState.Style3 -> {
+                        items[2]
+                    }
+                }
+            )
+        }
+
+        // ExposedDropdownMenu Colors
+        val contentColor = Color(0xFF6E3CC5)
+
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            TextField(
+                readOnly = true,
+                value = selected,
+                onValueChange = {},
+                label = { Text("Стиль карточек") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults
+                        .TrailingIcon(
+                            expanded = expanded
+                        )
+                },
+                modifier = Modifier.menuAnchor(),
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = Color.Black,
+                    containerColor = Color.White,
+                    cursorColor = contentColor,
+                    focusedIndicatorColor = contentColor,
+                    unfocusedIndicatorColor = Color.Gray,
+                    focusedTrailingIconColor = contentColor,
+                    unfocusedTrailingIconColor = Color.Gray,
+                    focusedLabelColor = contentColor,
+                    unfocusedLabelColor = Color.Black
+                )
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                items.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(item) },
+                        onClick = {
+                            scope.launch {
+                                when (item) {
+                                    items[0] -> {
+                                        CardStyleState.putCardStyleState(
+                                            CardStyleState.Style1,
+                                            context
+                                        )
+                                    }
+
+                                    items[1] -> {
+                                        CardStyleState.putCardStyleState(
+                                            CardStyleState.Style2,
+                                            context
+                                        )
+                                    }
+
+                                    items[2] -> {
+                                        CardStyleState.putCardStyleState(
+                                            CardStyleState.Style3,
+                                            context
+                                        )
+                                    }
+                                }
+                                selected = item
+                                expanded = false
+                            }
+                        },
+                        colors = MenuDefaults.itemColors(
+                            textColor = contentColor,
+                            leadingIconColor = contentColor,
+                            trailingIconColor = contentColor,
+                        )
+                    )
+                }
             }
         }
     }

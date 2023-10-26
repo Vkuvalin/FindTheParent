@@ -1,26 +1,27 @@
 package com.kuvalin.findtheparent.data.database
 
-import android.app.Application
+
+import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.kuvalin.findtheparent.data.model.CardDbModel
+import com.kuvalin.findtheparent.data.model.CardStyleStateConverter
 import com.kuvalin.findtheparent.data.model.CardStyleStateDbModel
 import com.kuvalin.findtheparent.data.model.ScoreDbModel
 
 
 @Database(entities = [CardDbModel::class, ScoreDbModel::class, CardStyleStateDbModel::class], version = 1, exportSchema = false)
+@TypeConverters(CardStyleStateConverter::class)
 abstract class AppDatabase: RoomDatabase() {
-
-    abstract fun cardListDao(): CardListDao
-
     companion object {
 
         private var INSTANCE: AppDatabase? = null
         private val LOCK = Any() // Базы данных должны быть синхронизированы
         private const val DB_NAME = "card_item.db"
 
-        fun getInstance(application: Application): AppDatabase {
+        fun getInstance(context: Context): AppDatabase {
 
             INSTANCE?.let {
                 return it
@@ -45,7 +46,7 @@ abstract class AppDatabase: RoomDatabase() {
                     return it
                 }
                 val db = Room.databaseBuilder(
-                    application,
+                    context,
                     AppDatabase::class.java,
                     DB_NAME
                 ).build()
@@ -53,6 +54,7 @@ abstract class AppDatabase: RoomDatabase() {
                 return db // Возвращается именно db, потому что INSTANCE "нулабельная".
             }
         }
-
     }
+
+    abstract fun cardListDao(): CardListDao
 }

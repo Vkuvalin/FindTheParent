@@ -16,14 +16,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            var screenState = AppNavigationScreens.screenState.collectAsState()
+            val screenState = AppNavigationScreens.screenState.collectAsState()
 
 
 //            FindTheParentTheme {
 
             when (val currentState = screenState.value) {
                 is AppNavigationScreens.Welcome -> {
-//                        AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
+                        AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
                     WelcomeScreen{
                         AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
                     }

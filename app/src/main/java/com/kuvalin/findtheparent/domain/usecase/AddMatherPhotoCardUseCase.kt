@@ -5,8 +5,5 @@ import com.kuvalin.findtheparent.domain.repository.CardListRepository
 class AddMatherPhotoCardUseCase(
     private val cardListRepository: CardListRepository
 ) {
-
-    fun addMatherPhotoCardUseCase(resId: Int) {
-        cardListRepository.addMatherPhotoCardUseCase(resId)
-    }
+    suspend operator fun invoke(resId: Int) = cardListRepository.addMatherPhotoCard(resId)
 }
