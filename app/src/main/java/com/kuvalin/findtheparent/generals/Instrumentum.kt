@@ -121,3 +121,15 @@ fun AnimatedButton() {
 }
 
 */
+
+
+
+//region sortedSetOf
+// Под капотом он ссылается на TreeSet, а в лямба выражении указывается, по каким парам сортировать.
+// Это короче метод сортиворки массива (потом когда-нибудь почитать)
+//    private val shopList = sortedSetOf<ShopItem>(object : Comparator<ShopItem>{
+//        override fun compare(p0: ShopItem?, p1: ShopItem?): Int {
+//        }
+//    })
+//private val shopList = sortedSetOf<ShopItem>({ p0, p1 -> p0.id.compareTo(p1.id) })
+//endregion
