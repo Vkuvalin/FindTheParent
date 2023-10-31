@@ -1,5 +1,6 @@
 package com.kuvalin.findtheparent.data.mapper
 
+import android.util.Log
 import com.kuvalin.findtheparent.data.model.CardDbModel
 import com.kuvalin.findtheparent.data.model.CardStyleStateDbModel
 import com.kuvalin.findtheparent.data.model.ScoreDbModel
@@ -7,6 +8,7 @@ import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.domain.entity.Card.Companion.UNDEFINED_ID
 import com.kuvalin.findtheparent.domain.entity.Score
 import com.kuvalin.findtheparent.generals.CardStyleState
+import com.kuvalin.findtheparent.generals.CardType
 
 class CardMapper {
 
@@ -44,18 +46,28 @@ class CardMapper {
             id = cardDbModel.id,
             resourceId = cardDbModel.resourceId,
             style = cardDbModel.style,
-            type = cardDbModel.type
+            type = cardDbModel.type,
+            imageUri = cardDbModel.imageUri
         )
     }
     fun mapListDbModelToListEntity(list: List<CardDbModel>) = list.map {
         mapDbModelToEntityCard(it)
     }
     fun mapEntityToDbModelCard(card: Card) : CardDbModel {
+
+        if (card.type == CardType.FATHER || card.type == CardType.MATHER) {
+            Log.d("recomposition", "-----------------------")
+            Log.d("recomposition", card.toString())
+            Log.d("recomposition", "-----------------------")
+        }
+
+
         return CardDbModel(
             id = card.id,
             resourceId = card.resourceId,
             style = card.style,
-            type = card.type
+            type = card.type,
+            imageUri = card.imageUri
         )
     }
     fun mapListEntityToListDbModel(list: List<Card>) = list.map {

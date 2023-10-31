@@ -1,9 +1,13 @@
 package com.kuvalin.findtheparent.presentation.main
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.presentation.game.Game
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsMenu
@@ -11,10 +15,14 @@ import com.kuvalin.findtheparent.presentation.mainmenu.MainMenu
 import com.kuvalin.findtheparent.presentation.welcome.WelcomeScreen
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
+
+            val context = LocalContext.current
+            val repository = CardListRepositoryImpl(context)
 
             val screenState = AppNavigationScreens.screenState.collectAsState()
 
@@ -29,10 +37,11 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 is AppNavigationScreens.MainMenu -> {
-                    MainMenu()
+                    MainMenu(repository)
                 }
                 is AppNavigationScreens.GameSettingsMenu -> {
                     GameSettingsMenu(
+                        repository,
                         onBackPress = {
                             AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
                         }

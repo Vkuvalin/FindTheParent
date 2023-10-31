@@ -1,5 +1,7 @@
 package com.kuvalin.findtheparent.presentation.game
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -46,10 +48,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kuvalin.findtheparent.navigation.AppNavigationScreens
+import coil.compose.rememberImagePainter
 import com.kuvalin.findtheparent.R
-import com.kuvalin.findtheparent.generals.OnBackPressButton
 import com.kuvalin.findtheparent.domain.entity.Card
+import com.kuvalin.findtheparent.domain.entity.Card.Companion.UNDEFINED_ID
+import com.kuvalin.findtheparent.generals.OnBackPressButton
+import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsState
 import com.kuvalin.findtheparent.presentation.welcome.toPx
 import com.kuvalin.findtheparent.ui.theme.ParentBlue
@@ -127,7 +131,7 @@ fun Game(
                         мне дальше нужно отреагировать сразу 2 FlipCard. В принципе это должно получиться.
                         + Мне нужно в Card добавить поле visible: Boolean
                         */
-                        FlipCard(cardList[it].resourceId, gameSettingsState.cardSize)
+                        FlipCard(cardList[it].id, cardList[it].imageUri, cardList[it].resourceId, gameSettingsState.cardSize)
                     }
                 }
             }
@@ -287,12 +291,75 @@ fun WinnerParentText(textBrush: Brush) {
 }
 //endregion
 
+
+// UNDEFINED_ID-1 - чтобы избежать совпадения с реальным id из базы // TODO
+var selectedList = mutableListOf(
+    mutableListOf(UNDEFINED_ID-1, UNDEFINED_ID-1), // scope
+    mutableListOf(UNDEFINED_ID-1, UNDEFINED_ID-1)  // resId
+)
+
+
+
 //region FlipCard
 @Composable
-fun FlipCard(photoId: Int, cardSize: Dp) {
+fun FlipCard(id: Int, uri: Uri?, photoId: Int, cardSize: Dp) {
 
     var isFrontCardVisible by remember { mutableStateOf(true) }
-    val flipCard: () -> Unit = { isFrontCardVisible = !isFrontCardVisible }
+    val flipCard: () -> Unit = {
+        isFrontCardVisible = !isFrontCardVisible
+    }
+
+    val checkingSelection: () -> Unit = { // TODO
+
+        if (isFrontCardVisible) {
+            flipCard()
+        }
+
+        /*
+        Идея такая:
+            запустить эту функцию в корутине, сделав её в вечном цикле while с тригером на
+            массив selectedList
+        */
+
+
+        for (i in selectedList.indices)
+            if(selectedList[0][i] == 0){
+                selectedList[0].set(i, id)
+                selectedList[1].set(i, photoId)
+                break
+            }
+
+        Log.d("SELECT_CARD", "id3 -> $selectedList")
+
+        if(selectedList[0][0] == selectedList[0][1] && selectedList[1][0] != selectedList[1][1]){
+            flipCard()
+            selectedList[0][0] = 0
+            selectedList[0][1] = 0
+            selectedList[1][0] = 0
+            selectedList[1][1] = 0
+            Log.d("SELECT_CARD", "CHECK-1")
+        } else if (selectedList[0][0] != selectedList[0][1] && selectedList[0][0] != 0 && selectedList[0][1] != 0 ){
+            flipCard()
+            selectedList[0][0] = 0
+            selectedList[0][1] = 0
+            selectedList[1][0] = 0
+            selectedList[1][1] = 0
+            Log.d("SELECT_CARD", "CHECK-2")
+        } else if (selectedList[0][0] == selectedList[0][1] && selectedList[1][0] == selectedList[1][1]){
+            flipCard()
+            selectedList[0][0] = 0
+            selectedList[0][1] = 0
+            selectedList[1][0] = 0
+            selectedList[1][1] = 0
+            Log.d("SELECT_CARD", "CHECK-3")
+        }
+
+        Log.d("SELECT_CARD", "id3 -> $selectedList")
+
+    }
+
+
+
 
     val rotationAngle by animateFloatAsState(
         targetValue = if (isFrontCardVisible) 0f else 180f, label = ""
@@ -300,7 +367,6 @@ fun FlipCard(photoId: Int, cardSize: Dp) {
 
     Box(
         modifier = Modifier
-            .clickable(onClick = flipCard)
     ) {
         Box(
             modifier = Modifier
@@ -310,9 +376,9 @@ fun FlipCard(photoId: Int, cardSize: Dp) {
                 )
         ) {
             if (isFrontCardVisible) {
-                FrontCard(cardSize)
+                FrontCard(cardSize, checkingSelection)
             } else {
-                BackCard(photoId, cardSize)
+                BackCard(uri, photoId, cardSize, checkingSelection)
             }
         }
     }
@@ -320,11 +386,13 @@ fun FlipCard(photoId: Int, cardSize: Dp) {
 }
 
 @Composable
-fun FrontCard(cardSize: Dp) {
+fun FrontCard(cardSize: Dp, checkingSelection: () -> Unit) {
     Box(
         modifier = Modifier
             .background(brush = Brush.linearGradient(listOf(Color.Cyan, Color.Magenta)), alpha = 0f)
-            .size(cardSize),
+            .size(cardSize)
+            .clickable(onClick = checkingSelection)
+        ,
         contentAlignment = Alignment.Center
     ) {
         Image(
@@ -336,15 +404,17 @@ fun FrontCard(cardSize: Dp) {
     }
 }
 
+
 @Composable
-fun BackCard(photoId: Int, cardSize: Dp) {
+fun BackCard(uri: Uri?, photoId: Int, cardSize: Dp, checkingSelection: () -> Unit) {
     Box(
         modifier = Modifier
+            .clickable(onClick = checkingSelection)
             .size(cardSize),
         contentAlignment = Alignment.Center
     ) {
         Image(
-            painter = painterResource(id = photoId),
+            painter = if(uri != null) rememberImagePainter(data = uri) else painterResource(photoId),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             modifier = Modifier.padding(8.dp)

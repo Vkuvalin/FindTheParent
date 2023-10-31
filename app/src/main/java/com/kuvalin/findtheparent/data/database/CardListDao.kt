@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.kuvalin.findtheparent.data.model.CardDbModel
 import com.kuvalin.findtheparent.data.model.CardStyleStateDbModel
+import com.kuvalin.findtheparent.data.model.InitialLoadState
 import com.kuvalin.findtheparent.data.model.ScoreDbModel
 import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardType
@@ -46,5 +47,11 @@ interface CardListDao {
     suspend fun addFatherPhotoCard(card: CardDbModel)
     @Query("SELECT * FROM card_items WHERE type=:type LIMIT 1")
     suspend fun getFatherPhotoCard(type: CardType): CardDbModel
+
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addInitialLoadState(initialLoadState: InitialLoadState)
+    @Query("SELECT * FROM initial_load_state")
+    suspend fun getInitialLoadState(): InitialLoadState
 
 }

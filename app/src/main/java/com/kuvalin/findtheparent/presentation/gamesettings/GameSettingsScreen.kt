@@ -48,6 +48,7 @@ import com.kuvalin.findtheparent.generals.CardType
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.generals.NoRippleTheme
 import com.kuvalin.findtheparent.generals.OnBackPressButton
+import com.kuvalin.findtheparent.presentation.main.MainActivity
 import com.kuvalin.findtheparent.presentation.welcome.toPx
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,8 +60,8 @@ enum class ButtonType {
 
 var buttonType = ButtonType.INIT
 
-suspend fun getCardList(context: Context, gameSettingsState: GameSettingsState): List<Card>{
-    return GetCardListUseCase(CardListRepositoryImpl(context))(
+suspend fun getCardList(repository: CardListRepositoryImpl, gameSettingsState: GameSettingsState): List<Card>{
+    return GetCardListUseCase(repository)(
         style = when(CardStyleState.cardStyleState.value){
             is CardStyleState.Style1 -> { CardStyle.STYLE1 }
             is CardStyleState.Style2 -> { CardStyle.STYLE2 }
@@ -74,6 +75,7 @@ suspend fun getCardList(context: Context, gameSettingsState: GameSettingsState):
 
 @Composable
 fun GameSettingsMenu(
+    repository: CardListRepositoryImpl,
     onBackPress: () -> Unit
 ) {
 
@@ -297,7 +299,7 @@ fun GameSettingsMenu(
                     AppNavigationScreens.Game(
                         context = context,
                         gameSettingsState = GameSettingsState.Easy,
-                        cardList = getCardList(context, GameSettingsState.Easy)
+                        cardList = getCardList(repository, GameSettingsState.Easy)
                     )
                 )
             }
@@ -307,7 +309,7 @@ fun GameSettingsMenu(
                     AppNavigationScreens.Game(
                         context = context,
                         gameSettingsState = GameSettingsState.Medium,
-                        cardList = getCardList(context, GameSettingsState.Medium)
+                        cardList = getCardList(repository, GameSettingsState.Medium)
                     )
                 )
             }
@@ -317,7 +319,7 @@ fun GameSettingsMenu(
                     AppNavigationScreens.Game(
                         context = context,
                         gameSettingsState = GameSettingsState.Hard,
-                        cardList = getCardList(context, GameSettingsState.Hard)
+                        cardList = getCardList(repository, GameSettingsState.Hard)
                     )
                 )
             }
@@ -327,7 +329,7 @@ fun GameSettingsMenu(
                     AppNavigationScreens.Game(
                         context = context,
                         gameSettingsState = GameSettingsState.Special,
-                        cardList = getCardList(context, GameSettingsState.Special)
+                        cardList = getCardList(repository, GameSettingsState.Special)
                     )
                 )
             }

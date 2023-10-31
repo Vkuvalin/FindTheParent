@@ -2,10 +2,16 @@ package com.kuvalin.findtheparent.data.repository
 
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.kuvalin.findtheparent.R
 import com.kuvalin.findtheparent.data.database.AppDatabase
+import com.kuvalin.findtheparent.data.database.cardId
+import com.kuvalin.findtheparent.data.database.cardsCollectionStyle1
+import com.kuvalin.findtheparent.data.database.cardsCollectionStyle2
+import com.kuvalin.findtheparent.data.database.cardsCollectionStyle3
 import com.kuvalin.findtheparent.data.mapper.CardMapper
+import com.kuvalin.findtheparent.data.model.InitialLoadState
 import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.domain.entity.Score
 import com.kuvalin.findtheparent.domain.repository.CardListRepository
@@ -15,96 +21,16 @@ import com.kuvalin.findtheparent.generals.CardType
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class CardListRepositoryImpl(
     private val context: Context
-//    private val cardListDao: CardListDao,
-//    private val mapper: CardMapper
 ) : CardListRepository {
 
     private val cardListDao = AppDatabase.getInstance(context).cardListDao()
     private val mapper = CardMapper()
 
-    private val scope = CoroutineScope(context = Dispatchers.Default)
-
-    //region cardsCollectionStyle1
-    val cardsCollectionStyle1 = listOf( // 16
-        R.drawable.style_1_camel,
-        R.drawable.style_1_cat,
-        R.drawable.style_1_cow,
-        R.drawable.style_1_deer,
-        R.drawable.style_1_duck,
-        R.drawable.style_1_elephant,
-        R.drawable.style_1_fish,
-        R.drawable.style_1_flamingo,
-        R.drawable.style_1_fox,
-        R.drawable.style_1_lion,
-        R.drawable.style_1_monkey,
-        R.drawable.style_1_panda,
-        R.drawable.style_1_pig,
-        R.drawable.style_1_pigeon,
-        R.drawable.style_1_rat,
-        R.drawable.style_1_tiger,
-        R.drawable.style_1_turtle
-    )
-
-    //endregion
-    //region cardsCollectionStyle2
-    val cardsCollectionStyle2 = listOf(
-        // 14
-        R.drawable.style_2_bear,
-        R.drawable.style_2_beaver,
-        R.drawable.style_2_cat,
-        R.drawable.style_2_cow,
-        R.drawable.style_2_dog,
-        R.drawable.style_2_eagle,
-        R.drawable.style_2_elephant,
-        R.drawable.style_2_fox,
-        R.drawable.style_2_giraffe,
-        R.drawable.style_2_hippo,
-        R.drawable.style_2_lion,
-        R.drawable.style_2_mouse,
-        R.drawable.style_2_pig,
-        R.drawable.style_2_snake,
-    )
-
-    //endregion
-    //region cardsCollectionStyle3
-    val cardsCollectionStyle3 = listOf(
-        // 14
-        R.drawable.style_3_bear,
-        R.drawable.style_3_beaver,
-        R.drawable.style_3_cat,
-        R.drawable.style_3_cow,
-        R.drawable.style_3_dog,
-        R.drawable.style_3_eagle,
-        R.drawable.style_3_elephant,
-        R.drawable.style_3_fox,
-        R.drawable.style_3_giraffe,
-        R.drawable.style_3_hippo,
-        R.drawable.style_3_lion,
-        R.drawable.style_3_mouse,
-        R.drawable.style_3_pig,
-        R.drawable.style_3_snake,
-    )
-    //endregion
-
-
-
-
-
-    init {
-        scope.launch {
-            addCardList(cardsCollectionStyle1, CardStyle.STYLE1)
-            addCardList(cardsCollectionStyle2, CardStyle.STYLE2)
-            addCardList(cardsCollectionStyle3, CardStyle.STYLE3)
-
-            // TODO  "Добавить сюда дефолтные аватарки мужчины и женщины"
-            addFatherPhotoCard(R.drawable.papa)
-            addMatherPhotoCard(R.drawable.mama)
-        }
-    }
 
 
     // ############ Реализация репозитория ############
@@ -129,22 +55,6 @@ class CardListRepositoryImpl(
     }
 
 
-    // CardList (Да-да, можно было обойтись без БД, но сделал чисто для тренировки)
-    private suspend fun addCardList(list: List<Int>, style: CardStyle) {
-
-        val cardList = mutableListOf<Card>()
-        list.forEach {
-            cardList.add(
-                Card(
-                    resourceId = it,
-                    style = style
-                )
-            )
-        }
-
-        cardListDao.addCardList(mapper.mapListEntityToListDbModel(cardList))
-    }
-
     override suspend fun getCardList(
         style: CardStyle,
         type: CardType,
@@ -157,37 +67,59 @@ class CardListRepositoryImpl(
 
 
     // Mather
-    override suspend fun addMatherPhotoCard(resId: Int) {
+    override suspend fun addMatherPhotoCard(resId: Int, imageUri: Uri?) {
         cardListDao.addMatherPhotoCard(
             mapper.mapEntityToDbModelCard(
                 Card(
+                    id = 777,
                     resourceId = resId,
                     type = CardType.MATHER,
-                    style = CardStyle.NULL
+                    style = CardStyle.NULL,
+                    imageUri = imageUri
                 )
             )
         )
     }
 
     override suspend fun getMatherPhotoCard(type: CardType): Card {
+//        Log.d("recomposition", "repositoryMather id ${cardListDao.getMatherPhotoCard(type).id}")
+//        Log.d(
+//            "recomposition",
+//            "repositoryMather imageUri ${cardListDao.getMatherPhotoCard(type).imageUri}"
+//        )
+//        Log.d(
+//            "recomposition",
+//            "repositoryMather resourceId ${cardListDao.getMatherPhotoCard(type).resourceId}"
+//        )
         return mapper.mapDbModelToEntityCard(cardListDao.getMatherPhotoCard(type))
     }
 
 
     // Father
-    override suspend fun addFatherPhotoCard(resId: Int) {
+    override suspend fun addFatherPhotoCard(resId: Int, imageUri: Uri?) {
         cardListDao.addFatherPhotoCard(
             mapper.mapEntityToDbModelCard(
                 Card(
+                    id = 888,
                     resourceId = resId,
                     type = CardType.FATHER,
-                    style = CardStyle.NULL
+                    style = CardStyle.NULL,
+                    imageUri = imageUri
                 )
             )
         )
     }
 
     override suspend fun getFatherPhotoCard(type: CardType): Card {
+//        Log.d("recomposition", "repositoryFather id ${cardListDao.getFatherPhotoCard(type).id}")
+//        Log.d(
+//            "recomposition",
+//            "repositoryFather imageUri ${cardListDao.getFatherPhotoCard(type).imageUri}"
+//        )
+//        Log.d(
+//            "recomposition",
+//            "repositoryFather resourceId ${cardListDao.getFatherPhotoCard(type).resourceId}"
+//        )
         return mapper.mapDbModelToEntityCard(cardListDao.getFatherPhotoCard(type))
     }
 
@@ -199,7 +131,7 @@ class CardListRepositoryImpl(
         collection: List<Card>,
         gameSettingsState: GameSettingsState
     ): List<Card> {
-        val papa = getFatherPhotoCard(CardType.FATHER)
+        val papa = getFatherPhotoCard(CardType.FATHER) // TODO
         val mama = getFatherPhotoCard(CardType.MATHER)
 
         val specialCollection = mutableListOf<Card>()
@@ -252,19 +184,6 @@ class CardListRepositoryImpl(
     //endregion
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // ############ ЧУЛАН ############

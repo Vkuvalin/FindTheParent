@@ -2,7 +2,12 @@ package com.kuvalin.findtheparent.presentation.mainmenu
 
 
 import android.annotation.SuppressLint
+import android.net.Uri
+import android.os.Build
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -10,8 +15,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,7 +53,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -60,10 +62,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight.Companion.W500
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberImagePainter
 import com.kuvalin.findtheparent.R
 import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
+import com.kuvalin.findtheparent.domain.entity.Card.Companion.UNDEFINED_ID
+import com.kuvalin.findtheparent.domain.entity.Score
+import com.kuvalin.findtheparent.domain.usecase.AddFatherPhotoCardUseCase
+import com.kuvalin.findtheparent.domain.usecase.AddMatherPhotoCardUseCase
 import com.kuvalin.findtheparent.domain.usecase.GetCardStyleStateUseCase
+import com.kuvalin.findtheparent.domain.usecase.GetFatherPhotoCardUseCase
+import com.kuvalin.findtheparent.domain.usecase.GetGameScoreUseCase
+import com.kuvalin.findtheparent.domain.usecase.GetMatherPhotoCardUseCase
 import com.kuvalin.findtheparent.generals.CardStyleState
+import com.kuvalin.findtheparent.generals.CardType
 import com.kuvalin.findtheparent.generals.NoRippleTheme
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.presentation.welcome.toPx
@@ -71,17 +82,23 @@ import com.kuvalin.findtheparent.ui.theme.ParentBlue
 import com.kuvalin.findtheparent.ui.theme.ParentRed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.lang.RuntimeException
 
 
 // На тему удаления тени при нажатии и тп
 // https://stackoverflow.com/questions/69076711/how-to-set-gradient-background-in-topappbar-using-jetpack-compose
 
+
+var scoreMama = 0
+var scorePapa = 0
+
+@RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalTextApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun MainMenu() {
+fun MainMenu(repository: CardListRepositoryImpl) {
 
+    //region Animation
     val rotateColor = rememberInfiniteTransition(label = "")
     val rotateColorAnimation by rotateColor.animateFloat(
         initialValue = -360f,
@@ -100,11 +117,13 @@ fun MainMenu() {
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
+    //endregion
 
     // TODO - попробовать использовать из Instrumentum
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp
+
 
 
     ModalNavigationDrawer(
@@ -116,7 +135,7 @@ fun MainMenu() {
                     .fillMaxHeight()
                     .background(color = Color.White)
             ) {
-                DropDownMenuStyleCard()
+                DropDownMenuStyleCard(repository)
             }
         },
     ) {
@@ -176,12 +195,13 @@ fun MainMenu() {
             }
 
 
-            ParentsCardsBox(rotateColorAnimation, rotateColorAnimation2)
-            Score()
+            ParentsCardsBox(repository)
+            Score(repository)
 
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(100.dp)) // TODO плохое решение! Переделать хотя бы на 1f
             Spacer(modifier = Modifier.height(100.dp))
             CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+                //region Button "НАЧАТЬ"
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -206,6 +226,7 @@ fun MainMenu() {
                 ) {
                     Text(text = "НАЧАТЬ!")
                 }
+                //endregion
             }
         }
     }
@@ -217,7 +238,7 @@ fun MainMenu() {
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropDownMenuStyleCard() {
+fun DropDownMenuStyleCard(repository: CardListRepositoryImpl) {
 
     val context = LocalContext.current
     val scope = CoroutineScope(Dispatchers.IO)
@@ -226,13 +247,16 @@ fun DropDownMenuStyleCard() {
 
     if (!loadStyleComplete) {
         scope.launch {
+            delay(500)
             try {
                 CardStyleState.putCardStyleState(
-                    GetCardStyleStateUseCase(CardListRepositoryImpl(context)).invoke(),
+                    GetCardStyleStateUseCase(repository).invoke(),
                     context
                 )
                 loadStyleComplete = true
-            } catch (e: Exception) { initLoad = true}
+            } catch (e: Exception) {
+                initLoad = true
+            }
         }
     }
 
@@ -344,8 +368,9 @@ fun DropDownMenuStyleCard() {
 //endregion
 
 //region ParentsCardsBox
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun ParentsCardsBox(animationVector: Float, animationVector2: Float) {
+fun ParentsCardsBox(repository: CardListRepositoryImpl) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -356,7 +381,7 @@ fun ParentsCardsBox(animationVector: Float, animationVector2: Float) {
                 .weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ParentCard("МАМКА", R.drawable.mama, ParentRed, animationVector, animationVector2)
+            ParentCard("МАМКА", ParentRed, repository)
         }
 
         Column(
@@ -364,20 +389,19 @@ fun ParentsCardsBox(animationVector: Float, animationVector2: Float) {
                 .weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ParentCard("ПАПКА", R.drawable.papa, ParentBlue, animationVector, animationVector2)
+            ParentCard("ПАПКА", ParentBlue, repository)
         }
     }
 }
 //endregion
 
 //region ParentCard
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun ParentCard(
     name: String,
-    id: Int,
     color: Color,
-    animationVector: Float,
-    animationVector2: Float
+    repository: CardListRepositoryImpl
 ) {
     Text(
         modifier = Modifier
@@ -387,31 +411,75 @@ fun ParentCard(
         color = color,
         fontSize = 32.sp
     )
-    Box(
-        modifier = Modifier
-            .size(150.dp)
-    ) {
-        Image(
-            painter = painterResource(id = id),
-            contentDescription = null,
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier
-                .padding(8.dp)
-        )
+    GalleryImageSelector(name, repository)
+}
+//endregion
+
+//region PickImageFromGallery
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun GalleryImageSelector(name: String, repository: CardListRepositoryImpl) {
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val scope = CoroutineScope(Dispatchers.IO)
+    var initLoad by remember { mutableStateOf(false) }
+
+    if (!initLoad) {
+        scope.launch {
+            delay(1000)
+            selectedImageUri = when (name) {
+                "МАМКА" -> { GetMatherPhotoCardUseCase(repository).invoke(CardType.MATHER)?.imageUri }
+                "ПАПКА" -> { GetFatherPhotoCardUseCase(repository).invoke(CardType.FATHER)?.imageUri }
+                else -> {null}
+            }
+            Log.d("recomposition", "1111111111111111111 --> ${selectedImageUri.toString()}")
+            initLoad = true
+        }
     }
-    CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+
+
+    if (initLoad) {
+        val getContent = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            selectedImageUri = uri
+        }
+
+        Box(
+            modifier = Modifier
+                .size(150.dp)
+        ) {
+                Image(
+                    painter = if(selectedImageUri != null)
+                        rememberImagePainter(data = selectedImageUri)
+                    else painterResource(if (name == "МАМКА") R.drawable.mama else R.drawable.papa),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+            selectedImageUri?.let { uri ->
+                scope.launch {
+                    when (name) {
+                        "МАМКА" -> { AddMatherPhotoCardUseCase(repository).invoke(UNDEFINED_ID, uri) }
+                        "ПАПКА" -> { AddFatherPhotoCardUseCase(repository).invoke(UNDEFINED_ID, uri) }
+                        else -> {}
+                    }
+                    Log.d("recomposition", "22222222222222222222 selectedImageUri --> ${selectedImageUri.toString()}")
+                    Log.d("recomposition", "22222222222222222222 uri --> $uri")
+                }
+            }
+        }
+
         Button(
             modifier = Modifier
                 .padding(top = 16.dp)
-                .clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() }
-                ) {}
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(Color.Cyan, Color.Magenta),
-                        start = Offset(0.dp.toPx(), animationVector.dp.toPx()),
-                        end = Offset(animationVector2.dp.toPx(), -animationVector.dp.toPx()),
+    //                            start = Offset(0.dp.toPx(), animationVector.dp.toPx()),
+    //                            end = Offset(animationVector2.dp.toPx(), -animationVector.dp.toPx()),
+                        start = Offset(0.dp.toPx(), 0.dp.toPx()),
+                        end = Offset(0.dp.toPx(), 0.dp.toPx()),
                         tileMode = TileMode.Mirror,
                     ),
                     alpha = 1f
@@ -419,7 +487,9 @@ fun ParentCard(
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0F)
             ),
-            onClick = { /*TODO*/ }
+            onClick = {
+                getContent.launch("image/*")
+            }
         ) {
             Text(text = "добавить фото")
         }
@@ -428,41 +498,58 @@ fun ParentCard(
 //endregion
 
 //region Score
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun Score() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = 24.dp,
-                vertical = 8.dp
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(R.string.GameScore),
-            fontSize = 32.sp
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        Row(
-            modifier = Modifier
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "7",
-                fontSize = 32.sp,
-                fontWeight = W500,
-                color = ParentRed
-            )
-            Spacer(modifier = Modifier.weight(3f))
-            Text(
-                text = "5",
-                fontSize = 32.sp,
-                fontWeight = W500,
-                color = ParentBlue
-            )
-            Spacer(modifier = Modifier.weight(1f))
+fun Score(repository: CardListRepositoryImpl) {
+
+    val scope = CoroutineScope(Dispatchers.IO)
+    var loadCompleted by remember { mutableStateOf(false) }
+
+    if (!loadCompleted) {
+        scope.launch {
+            delay(1000)
+            scoreMama = GetGameScoreUseCase(repository).invoke().mama
+            scorePapa = GetGameScoreUseCase(repository).invoke().papa
+            loadCompleted = true
         }
     }
+
+    if (loadCompleted) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 24.dp,
+                    vertical = 8.dp
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.GameScore),
+                fontSize = 32.sp
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(
+                modifier = Modifier
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "$scoreMama",
+                    fontSize = 32.sp,
+                    fontWeight = W500,
+                    color = ParentRed
+                )
+                Spacer(modifier = Modifier.weight(3f))
+                Text(
+                    text = "$scorePapa",
+                    fontSize = 32.sp,
+                    fontWeight = W500,
+                    color = ParentBlue
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+
 }
 //endregion

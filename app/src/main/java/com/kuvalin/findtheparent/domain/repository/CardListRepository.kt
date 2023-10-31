@@ -1,5 +1,7 @@
 package com.kuvalin.findtheparent.domain.repository
 
+import android.graphics.Bitmap
+import android.net.Uri
 import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.domain.entity.Score
 import com.kuvalin.findtheparent.generals.CardStyle
@@ -24,11 +26,11 @@ interface CardListRepository {
     ): List<Card>
 
 
-    suspend fun addMatherPhotoCard(resId: Int)
-    suspend fun getMatherPhotoCard(type: CardType): Card
+    suspend fun addMatherPhotoCard(resId: Int, imageUri: Uri? = null)
+    suspend fun getMatherPhotoCard(type: CardType): Card?
 
 
-    suspend fun addFatherPhotoCard(resId: Int)
-    suspend fun getFatherPhotoCard(type: CardType): Card
+    suspend fun addFatherPhotoCard(resId: Int, imageUri: Uri? = null)
+    suspend fun getFatherPhotoCard(type: CardType): Card?
 
 }

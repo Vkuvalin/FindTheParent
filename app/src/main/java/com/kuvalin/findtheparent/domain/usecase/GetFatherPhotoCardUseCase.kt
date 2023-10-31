@@ -8,6 +8,6 @@ import com.kuvalin.findtheparent.generals.CardType
 class GetFatherPhotoCardUseCase(
     private val cardListRepository: CardListRepository
 ) {
-    suspend operator fun invoke(type: CardType): Card = cardListRepository.getFatherPhotoCard(type)
+    suspend operator fun invoke(type: CardType): Card? = cardListRepository.getFatherPhotoCard(type)
 
 }
