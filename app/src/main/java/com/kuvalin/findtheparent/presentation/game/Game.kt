@@ -1,7 +1,6 @@
 package com.kuvalin.findtheparent.presentation.game
 
-import android.net.Uri
-import android.util.Log
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -50,26 +49,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import com.kuvalin.findtheparent.R
+import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
 import com.kuvalin.findtheparent.domain.entity.Card
-import com.kuvalin.findtheparent.domain.entity.Card.Companion.UNDEFINED_ID
+import com.kuvalin.findtheparent.domain.entity.Score
+import com.kuvalin.findtheparent.domain.usecase.AddGameScoreUseCase
+import com.kuvalin.findtheparent.domain.usecase.GetGameScoreUseCase
 import com.kuvalin.findtheparent.generals.OnBackPressButton
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsState
 import com.kuvalin.findtheparent.presentation.welcome.toPx
 import com.kuvalin.findtheparent.ui.theme.ParentBlue
 import com.kuvalin.findtheparent.ui.theme.ParentRed
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-// Что здесь осталось доделать:
-/*
-1. Подачу сюда коллекции
-2. При выборе 2-х одинаковых >> невидимые
-2.1 При выборе 2-х неодинаковых >> закрываются
-3. При выборе папки или мамки >> следующий экран (подготовлен, но не настроен)
-*/
+
+const val MAMA_ID = 777
+const val PAPA_ID = 888
+var scoreMama = 0
+var scorePapa = 0
 
 
 @Composable
 fun Game(
+    repository: CardListRepositoryImpl,
     cardList: List<Card>,
     gameSettingsState: GameSettingsState,
     onBackPress: () -> Unit
@@ -117,147 +122,183 @@ fun Game(
                 columns = GridCells.Fixed(gameSettingsState.column),
                 verticalArrangement = Arrangement.SpaceAround
             ) {
-                items(cardList.size) {
+                items(cardList.size) { position ->
                     Column(
                         modifier = Modifier.padding(vertical = 24.dp, horizontal = 8.dp),
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-//                        var firstCard: Card
-//                        var secondCard: Card
-                        /* Идея такая:
-                        TODO
-                        Я выше делаю 2 ремембера на List<Int> и как-то их сверяю во FlipCard, причем
-                        мне дальше нужно отреагировать сразу 2 FlipCard. В принципе это должно получиться.
-                        + Мне нужно в Card добавить поле visible: Boolean
-                        */
-                        FlipCard(cardList[it].id, cardList[it].imageUri, cardList[it].resourceId, gameSettingsState.cardSize)
+                        FlipCard(cardList[position], gameSettingsState.cardSize, position)
                     }
                 }
             }
         }
     }
-    OnBackPressButton(onBackPress)
+    OnBackPressButton(onBackPress) { clearList() }
 
-    when (gameSettingsState) {
-        is GameSettingsState.Special -> {
-            WinDialog(rotateColorAnimation, rotateColorAnimation2)
-        }
-
-        else -> {}
+    if (MAMA_ID in selectedList[2] || PAPA_ID in selectedList[2]) {
+        WinDialog(rotateColorAnimation, rotateColorAnimation2, repository)
     }
 }
 
 
 //region WinDialog
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalTextApi::class)
 @Composable
-fun WinDialog(rotateColorAnimation: Float, rotateColorAnimation2: Float) {
+fun WinDialog(
+    rotateColorAnimation: Float,
+    rotateColorAnimation2: Float,
+    repository: CardListRepositoryImpl
+) {
 
-    val textBrush = Brush.linearGradient(
-        colors = listOf(Color.Cyan, Color.Magenta),
-        start = Offset(0.dp.toPx(), rotateColorAnimation2.dp.toPx()),
-        end = Offset(rotateColorAnimation2.dp.toPx(), -rotateColorAnimation.dp.toPx()),
-        tileMode = TileMode.Mirror,
-    )
+    val scope = CoroutineScope(Dispatchers.IO)
+    var loadCompleted by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        modifier = Modifier,
-        onDismissRequest = {
-            AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
-        },
-        title = {
-            WinnerParentText(textBrush)
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(R.string.GameScore),
-                    fontWeight = FontWeight.W500,
-                    fontSize = 24.sp
-                )
-                Spacer(modifier = Modifier.height(5.dp))
-                Row(
+
+    if (!loadCompleted) {
+        scope.launch {
+            delay(500)
+            scoreMama = GetGameScoreUseCase(repository).invoke().mama
+            scorePapa = GetGameScoreUseCase(repository).invoke().papa
+
+            if (MAMA_ID in selectedList[2]){
+                scoreMama++
+            }else if(PAPA_ID in selectedList[2]) {
+                scorePapa++
+            }
+
+            loadCompleted = true
+        }
+    }
+
+    if (loadCompleted) {
+        val textBrush = Brush.linearGradient(
+            colors = listOf(Color.Cyan, Color.Magenta),
+            start = Offset(0.dp.toPx(), rotateColorAnimation2.dp.toPx()),
+            end = Offset(rotateColorAnimation2.dp.toPx(), -rotateColorAnimation.dp.toPx()),
+            tileMode = TileMode.Mirror,
+        )
+
+        AlertDialog(
+            modifier = Modifier,
+            onDismissRequest = {
+                AppNavigationScreens.putScreenState(AppNavigationScreens.GameSettingsMenu)
+                scope.launch {
+                    AddGameScoreUseCase(repository).invoke(
+                        Score(mama = scoreMama, papa = scorePapa)
+                    )
+                }
+                clearList()
+            },
+            title = {
+                WinnerParentText(textBrush)
+            },
+            text = {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                    ,
-                    horizontalArrangement = Arrangement.SpaceAround
+                        .padding(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Text(
+                        text = stringResource(R.string.GameScore),
+                        fontWeight = FontWeight.W500,
+                        fontSize = 24.sp
+                    )
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
                     ) {
-                        Text(
-                            text = "МАМКА",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.W500,
-                            color = ParentRed
-                        )
-                        Text(
-                            text = "7",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.W500,
-                            color = ParentRed
-                        )
-                    }
-                    Column(
-                        modifier = Modifier,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "ПАПКА",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.W500,
-                            color = ParentBlue
-                        )
-                        Text(
-                            text = "5",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.W500,
-                            color = ParentBlue
-                        )
+                        Column(
+                            modifier = Modifier,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "МАМКА",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.W500,
+                                color = ParentRed
+                            )
+                            Text(
+                                text = "$scoreMama",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.W500,
+                                color = ParentRed
+                            )
+                        }
+                        Column(
+                            modifier = Modifier,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "ПАПКА",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.W500,
+                                color = ParentBlue
+                            )
+                            Text(
+                                text = "$scorePapa",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.W500,
+                                color = ParentBlue
+                            )
+                        }
                     }
                 }
-            }
-        },
-        confirmButton = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                Text(
+            },
+            confirmButton = {
+                Row(
                     modifier = Modifier
-                        .clickable(
-                            onClick = { AppNavigationScreens.putScreenState(AppNavigationScreens.GameSettingsMenu) },
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() }
-                        ),
-                    text = "ЗАНОВО",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.W500,
-                    style = TextStyle(brush = textBrush)
-                )
-                Text(
-                    modifier = Modifier
-                        .clickable(
-                            onClick = { AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu) },
-                            indication = null,
-                            interactionSource = remember { MutableInteractionSource() }
-                        ),
-                    text = "МЕНЮ",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.W500,
-                    style = TextStyle(brush = textBrush)
-                )
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .clickable(
+                                onClick = {
+                                    AppNavigationScreens.putScreenState(AppNavigationScreens.GameSettingsMenu)
+                                    scope.launch {
+                                        AddGameScoreUseCase(repository).invoke(
+                                            Score(mama = scoreMama, papa = scorePapa)
+                                        )
+                                    }
+                                    clearList()
+                                },
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ),
+                        text = "ЗАНОВО",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.W500,
+                        style = TextStyle(brush = textBrush)
+                    )
+                    Text(
+                        modifier = Modifier
+                            .clickable(
+                                onClick = {
+                                    AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
+                                    scope.launch {
+                                        AddGameScoreUseCase(repository).invoke(
+                                            Score(mama = scoreMama, papa = scorePapa)
+                                        )
+                                    }
+                                    clearList()
+                                },
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ),
+                        text = "МЕНЮ",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.W500,
+                        style = TextStyle(brush = textBrush)
+                    )
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @OptIn(ExperimentalTextApi::class)
@@ -291,74 +332,76 @@ fun WinnerParentText(textBrush: Brush) {
 }
 //endregion
 
-
-// UNDEFINED_ID-1 - чтобы избежать совпадения с реальным id из базы // TODO
+//region selectedList
 var selectedList = mutableListOf(
-    mutableListOf(UNDEFINED_ID-1, UNDEFINED_ID-1), // scope
-    mutableListOf(UNDEFINED_ID-1, UNDEFINED_ID-1)  // resId
+    mutableListOf(0, 0),  // id
+    mutableListOf(0, 0),  // resId
+    mutableListOf()       // winning cards
 )
 
+fun clearList() {
+    selectedList = mutableListOf(
+        mutableListOf(0, 0),  // id
+        mutableListOf(0, 0),  // resId
+        mutableListOf()       // winning cards
+    )
+}
 
+suspend fun onWaitClickButton() {
+    while (true) {
+        if (selectedList[0][0] == 0 || selectedList[0][1] == 0) {
+            delay(100)
+        } else {
+            break
+        }
+    }
+}
+//endregion
 
 //region FlipCard
 @Composable
-fun FlipCard(id: Int, uri: Uri?, photoId: Int, cardSize: Dp) {
+fun FlipCard(card: Card, cardSize: Dp, position: Int) {
 
     var isFrontCardVisible by remember { mutableStateOf(true) }
-    val flipCard: () -> Unit = {
-        isFrontCardVisible = !isFrontCardVisible
-    }
+    val flipCard: () -> Unit = { isFrontCardVisible = !isFrontCardVisible }
+    val scope = CoroutineScope(Dispatchers.Default)
 
-    val checkingSelection: () -> Unit = { // TODO
+    val checkingSelection: () -> Unit = {
 
-        if (isFrontCardVisible) {
-            flipCard()
-        }
-
-        /*
-        Идея такая:
-            запустить эту функцию в корутине, сделав её в вечном цикле while с тригером на
-            массив selectedList
-        */
-
-
-        for (i in selectedList.indices)
-            if(selectedList[0][i] == 0){
-                selectedList[0].set(i, id)
-                selectedList[1].set(i, photoId)
-                break
+        scope.launch {
+            if (isFrontCardVisible) {
+                flipCard()
             }
 
-        Log.d("SELECT_CARD", "id3 -> $selectedList")
+            for (i in selectedList.indices)
+                if (selectedList[0][i] == 0) {
+                    selectedList[0].set(i, card.id)
+                    selectedList[1].set(i, position)
+                    break
+                }
 
-        if(selectedList[0][0] == selectedList[0][1] && selectedList[1][0] != selectedList[1][1]){
-            flipCard()
+            onWaitClickButton()
+
+            delay(500)
+            if (selectedList[0][0] == selectedList[0][1] && selectedList[1][0] != selectedList[1][1]) {
+                isFrontCardVisible = false
+                if (card.id !in selectedList[2]) {
+                    selectedList[2].add(card.id)
+                }
+            } else if (selectedList[0][0] != selectedList[0][1] && selectedList[0][0] != 0 && selectedList[0][1] != 0) {
+                isFrontCardVisible = true
+            } else if (selectedList[0][0] == selectedList[0][1] && selectedList[1][0] == selectedList[1][1]) {
+                isFrontCardVisible = true
+            }
+
+            delay(300)
             selectedList[0][0] = 0
             selectedList[0][1] = 0
             selectedList[1][0] = 0
             selectedList[1][1] = 0
-            Log.d("SELECT_CARD", "CHECK-1")
-        } else if (selectedList[0][0] != selectedList[0][1] && selectedList[0][0] != 0 && selectedList[0][1] != 0 ){
-            flipCard()
-            selectedList[0][0] = 0
-            selectedList[0][1] = 0
-            selectedList[1][0] = 0
-            selectedList[1][1] = 0
-            Log.d("SELECT_CARD", "CHECK-2")
-        } else if (selectedList[0][0] == selectedList[0][1] && selectedList[1][0] == selectedList[1][1]){
-            flipCard()
-            selectedList[0][0] = 0
-            selectedList[0][1] = 0
-            selectedList[1][0] = 0
-            selectedList[1][1] = 0
-            Log.d("SELECT_CARD", "CHECK-3")
         }
 
-        Log.d("SELECT_CARD", "id3 -> $selectedList")
-
     }
-
-
 
 
     val rotationAngle by animateFloatAsState(
@@ -376,9 +419,9 @@ fun FlipCard(id: Int, uri: Uri?, photoId: Int, cardSize: Dp) {
                 )
         ) {
             if (isFrontCardVisible) {
-                FrontCard(cardSize, checkingSelection)
+                FrontCard(card, cardSize, checkingSelection)
             } else {
-                BackCard(uri, photoId, cardSize, checkingSelection)
+                BackCard(card, cardSize, checkingSelection)
             }
         }
     }
@@ -386,13 +429,17 @@ fun FlipCard(id: Int, uri: Uri?, photoId: Int, cardSize: Dp) {
 }
 
 @Composable
-fun FrontCard(cardSize: Dp, checkingSelection: () -> Unit) {
+fun FrontCard(card: Card, cardSize: Dp, checkingSelection: () -> Unit) {
+
     Box(
         modifier = Modifier
             .background(brush = Brush.linearGradient(listOf(Color.Cyan, Color.Magenta)), alpha = 0f)
             .size(cardSize)
-            .clickable(onClick = checkingSelection)
-        ,
+            .clickable(onClick = {
+                if (card.id !in selectedList[2]) {
+                    checkingSelection()
+                }
+            }),
         contentAlignment = Alignment.Center
     ) {
         Image(
@@ -402,51 +449,35 @@ fun FrontCard(cardSize: Dp, checkingSelection: () -> Unit) {
             modifier = Modifier.padding(8.dp)
         )
     }
+
 }
 
 
 @Composable
-fun BackCard(uri: Uri?, photoId: Int, cardSize: Dp, checkingSelection: () -> Unit) {
+fun BackCard(card: Card, cardSize: Dp, checkingSelection: () -> Unit) {
+
     Box(
         modifier = Modifier
-            .clickable(onClick = checkingSelection)
+            .clickable(onClick = {
+                if (card.id !in selectedList[2]) {
+                    checkingSelection()
+                }
+            })
             .size(cardSize),
         contentAlignment = Alignment.Center
     ) {
         Image(
-            painter = if(uri != null) rememberImagePainter(data = uri) else painterResource(photoId),
+            painter = if (card.imageUri != null) rememberImagePainter(data = card.imageUri)
+            else painterResource(card.resourceId),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             modifier = Modifier.padding(8.dp)
         )
     }
+
 }
 //endregion
 
-//region Backup
-//TopAppBar(
-//            modifier = Modifier
-//                .background(
-//                    brush = Brush.linearGradient(
-//                        colors = listOf(Color.Cyan, Color.Magenta),
-//                        start = Offset(0.dp.toPx(), rotateColorAnimation2.dp.toPx()),
-//                        end = Offset(rotateColorAnimation2.dp.toPx(), -rotateColorAnimation.dp.toPx()),
-//                        tileMode = TileMode.Mirror,
-//                    ),
-//                    alpha = 0.1f
-//                ),
-//            title = {
-//                Text(text = "Главное меню")
-//            },
-//            colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.Transparent), // Убирает родной цвет
-//            navigationIcon = {
-//                IconButton(onClick = { onStopGameClick() }) {
-//                    Icon(
-//                        imageVector = Icons.Filled.ArrowBack,
-//                        contentDescription = null
-//                    )
-//                }
-//            }
-//        )
-//endregion
+
+
 

@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
 
             when (val currentState = screenState.value) {
                 is AppNavigationScreens.Welcome -> {
-                        AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
+//                        AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
                     WelcomeScreen{
                         AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
                     }
@@ -49,6 +49,7 @@ class MainActivity : ComponentActivity() {
                 }
                 is AppNavigationScreens.Game -> {
                     Game(
+                        repository = repository,
                         cardList = currentState.cardList,
                         gameSettingsState = currentState.gameSettingsState,
                         onBackPress = {

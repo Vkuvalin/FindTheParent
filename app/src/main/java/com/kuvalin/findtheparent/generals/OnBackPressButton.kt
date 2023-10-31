@@ -19,7 +19,7 @@ import com.kuvalin.findtheparent.ui.theme.Orange
 
 
 @Composable
-fun OnBackPressButton(onBackPress: () -> Unit) {
+fun OnBackPressButton(onBackPress: () -> Unit, someAction: () -> Unit = {}) {
 
     val firstPositionXOnScreen = 20.dp
     val firstPositionYOnScreen = 0.dp
@@ -29,7 +29,10 @@ fun OnBackPressButton(onBackPress: () -> Unit) {
             .offset(firstPositionXOnScreen + 20.dp, firstPositionYOnScreen)
             .size(60.dp, 45.dp)
             .clickable(
-                onClick = onBackPress,
+                onClick = {
+                    onBackPress()
+                    someAction()
+                },
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             )

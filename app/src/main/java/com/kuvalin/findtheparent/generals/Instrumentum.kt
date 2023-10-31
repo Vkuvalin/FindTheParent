@@ -133,3 +133,32 @@ fun AnimatedButton() {
 //    })
 //private val shopList = sortedSetOf<ShopItem>({ p0, p1 -> p0.id.compareTo(p1.id) })
 //endregion
+
+
+
+//region Backup TopAppBar
+//TopAppBar(
+//            modifier = Modifier
+//                .background(
+//                    brush = Brush.linearGradient(
+//                        colors = listOf(Color.Cyan, Color.Magenta),
+//                        start = Offset(0.dp.toPx(), rotateColorAnimation2.dp.toPx()),
+//                        end = Offset(rotateColorAnimation2.dp.toPx(), -rotateColorAnimation.dp.toPx()),
+//                        tileMode = TileMode.Mirror,
+//                    ),
+//                    alpha = 0.1f
+//                ),
+//            title = {
+//                Text(text = "Главное меню")
+//            },
+//            colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.Transparent), // Убирает родной цвет
+//            navigationIcon = {
+//                IconButton(onClick = { onStopGameClick() }) {
+//                    Icon(
+//                        imageVector = Icons.Filled.ArrowBack,
+//                        contentDescription = null
+//                    )
+//                }
+//            }
+//        )
+//endregion

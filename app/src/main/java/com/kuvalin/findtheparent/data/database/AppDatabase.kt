@@ -157,7 +157,7 @@ abstract class AppDatabase: RoomDatabase() {
                         scope.launch {
                             val dao = getInstance(context).cardListDao()
                             dao.addInitialLoadState(InitialLoadState(false))
-                            dao.addGameScore(ScoreDbModel(Card.UNDEFINED_ID, 1, 1))
+                            dao.addGameScore(ScoreDbModel(Card.UNDEFINED_ID, 0, 0))
                             Log.d("DEBUG", "${dao.getGameScore()}")
 
                             dao.addMatherPhotoCard(
