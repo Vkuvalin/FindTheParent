@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -14,15 +13,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kuvalin.findtheparent.R
-import com.kuvalin.findtheparent.data.model.InitialLoadState
-import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
-import com.kuvalin.findtheparent.domain.usecase.GetAppInitLoadStateUseCase
 import com.kuvalin.findtheparent.generals.AppInitLoadState
 import com.kuvalin.findtheparent.generals.AppInitLoadState.Companion.putAppInitLoadState
-import com.kuvalin.findtheparent.generals.FindTheParentsApplication
+import com.kuvalin.findtheparent.generals.getApplicationComponent
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens.Companion.screenState
+import com.kuvalin.findtheparent.presentation.AppViewModel
 import com.kuvalin.findtheparent.presentation.game.Game
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsMenu
 import com.kuvalin.findtheparent.presentation.mainmenu.MainMenu
@@ -33,17 +31,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity() : ComponentActivity() {
+
     @SuppressLint("CoroutineCreationDuringComposition")
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-
+            val component = getApplicationComponent()
+            val viewModel: AppViewModel = viewModel(factory = component.getViewModelFactory())
             val scope = CoroutineScope(Dispatchers.Default)
             val context = LocalContext.current
-            val repository = CardListRepositoryImpl(context)
 
             var playerState by remember { mutableStateOf(true) }
             val audioList = listOf(
@@ -83,7 +82,7 @@ class MainActivity : ComponentActivity() {
 
                 scope.launch {
                     delay(500)
-                    putAppInitLoadState(GetAppInitLoadStateUseCase(repository).invoke(), context)
+                    putAppInitLoadState(viewModel, viewModel.getAppInitLoadState.invoke())
                 }
 
                 when (val currentState = screenState.value) {
@@ -93,17 +92,16 @@ class MainActivity : ComponentActivity() {
                         }
                         WelcomeScreen {
                             AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
-                            scope.launch { putAppInitLoadState(AppInitLoadState.Successive, context) }
+                            scope.launch { putAppInitLoadState(viewModel, AppInitLoadState.Successive) }
                         }
                     }
 
                     is AppNavigationScreens.MainMenu -> {
-                        MainMenu(repository, appInitLoadState.value)
+                        MainMenu(appInitLoadState.value)
                     }
 
                     is AppNavigationScreens.GameSettingsMenu -> {
                         GameSettingsMenu(
-                            repository,
                             onBackPress = {
                                 AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
                             }
@@ -112,7 +110,6 @@ class MainActivity : ComponentActivity() {
 
                     is AppNavigationScreens.Game -> {
                         Game(
-                            repository = repository,
                             cardList = currentState.cardList,
                             gameSettingsState = currentState.gameSettingsState,
                             onBackPress = {

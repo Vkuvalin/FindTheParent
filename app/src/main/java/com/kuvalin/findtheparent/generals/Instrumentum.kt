@@ -1,11 +1,13 @@
 package com.kuvalin.findtheparent.generals
 
+import android.app.Application
 import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-
-
+import androidx.compose.ui.platform.LocalContext
+import com.kuvalin.findtheparent.di.ApplicationComponent
+import com.kuvalin.findtheparent.di.DaggerApplicationComponent
 
 
 object NoRippleTheme : RippleTheme {
@@ -162,3 +164,20 @@ fun AnimatedButton() {
 //            }
 //        )
 //endregion
+
+
+
+
+//class FindTheParentsApplication: Application() {
+//
+//    val component by lazy {
+//        DaggerApplicationComponent.factory().create(this)
+//    }
+//
+//}
+//
+//
+//@Composable
+//fun getApplicationComponent(): ApplicationComponent {
+//    return (LocalContext.current.applicationContext as FindTheParentsApplication).component
+//}

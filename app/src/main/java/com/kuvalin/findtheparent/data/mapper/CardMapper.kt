@@ -1,6 +1,5 @@
 package com.kuvalin.findtheparent.data.mapper
 
-import android.util.Log
 import com.kuvalin.findtheparent.data.model.AppInitLoadStateDbModel
 import com.kuvalin.findtheparent.data.model.CardDbModel
 import com.kuvalin.findtheparent.data.model.CardStyleStateDbModel
@@ -10,10 +9,9 @@ import com.kuvalin.findtheparent.domain.entity.Card.Companion.UNDEFINED_ID
 import com.kuvalin.findtheparent.domain.entity.Score
 import com.kuvalin.findtheparent.generals.AppInitLoadState
 import com.kuvalin.findtheparent.generals.CardStyleState
-import com.kuvalin.findtheparent.generals.CardStyleState.Companion.cardStyleState
-import com.kuvalin.findtheparent.generals.CardType
+import javax.inject.Inject
 
-class CardMapper {
+class CardMapper @Inject constructor() {
 
     // Score
     fun mapEntityToDbModelScore(score: Score) : ScoreDbModel {

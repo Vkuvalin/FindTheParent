@@ -19,13 +19,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CardListRepositoryImpl(
-    private val context: Context
+class CardListRepositoryImpl @Inject constructor(
+    private val context: Context,
+    private val cardListDao: CardListDao,
+    private val mapper: CardMapper
 ) : CardListRepository {
 
-    private val cardListDao: CardListDao = AppDatabase.getInstance(context).cardListDao()
-    private val mapper = CardMapper()
+//    private val cardListDao: CardListDao = AppDatabase.getInstance(context).cardListDao()
+//    private val mapper = CardMapper()
     private val scope = CoroutineScope(Dispatchers.Default)
     private var loadState = false
 

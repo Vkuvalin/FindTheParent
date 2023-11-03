@@ -49,15 +49,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.kuvalin.findtheparent.R
-import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
 import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.domain.entity.Score
-import com.kuvalin.findtheparent.domain.usecase.AddGameScoreUseCase
-import com.kuvalin.findtheparent.domain.usecase.GetGameScoreUseCase
 import com.kuvalin.findtheparent.generals.OnBackPressButton
+import com.kuvalin.findtheparent.generals.getApplicationComponent
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
+import com.kuvalin.findtheparent.presentation.AppViewModel
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsState
 import com.kuvalin.findtheparent.presentation.welcome.toPx
 import com.kuvalin.findtheparent.ui.theme.ParentBlue
@@ -75,9 +75,10 @@ var scoreMama = 0
 var scorePapa = 0
 
 
+
+
 @Composable
 fun Game(
-    repository: CardListRepositoryImpl,
     cardList: List<Card>,
     gameSettingsState: GameSettingsState,
     onBackPress: () -> Unit,
@@ -85,6 +86,8 @@ fun Game(
     soundWin: MediaPlayer
 ) {
     val scope = CoroutineScope(Dispatchers.Default)
+    val component = getApplicationComponent()
+    val viewModel: AppViewModel = viewModel(factory = component.getViewModelFactory())
 
 
     Column {
@@ -145,7 +148,7 @@ fun Game(
     OnBackPressButton(onBackPress) { clearList() }
 
     if ((MAMA_ID in selectedList[2] || PAPA_ID in selectedList[2]) || (selectedList[2].size == 10)) {
-        WinDialog(repository, soundWin, scope)
+        WinDialog(viewModel, soundWin, scope)
     }
 
     BackHandler {
@@ -161,7 +164,7 @@ fun Game(
 @OptIn(ExperimentalTextApi::class)
 @Composable
 fun WinDialog(
-    repository: CardListRepositoryImpl,
+    viewModel: AppViewModel,
     mMediaPlayer: MediaPlayer,
     scopeExternal: CoroutineScope
 ) {
@@ -196,8 +199,8 @@ fun WinDialog(
     if (!loadCompleted) {
         scope.launch {
             delay(500)
-            scoreMama = GetGameScoreUseCase(repository).invoke().mama
-            scorePapa = GetGameScoreUseCase(repository).invoke().papa
+            scoreMama = viewModel.getGameScore.invoke().mama
+            scorePapa = viewModel.getGameScore.invoke().papa
 
             if (MAMA_ID in selectedList[2]){
                 scoreMama++
@@ -219,7 +222,7 @@ fun WinDialog(
 
         AlertDialog(
             modifier = Modifier,
-            onDismissRequest = { closeScreen(scope, repository) },
+            onDismissRequest = { closeScreen(viewModel, scope) },
             title = {
                 WinnerParentText(textBrush)
             },
@@ -290,7 +293,7 @@ fun WinDialog(
                                 onClick = {
                                     AppNavigationScreens.putScreenState(AppNavigationScreens.GameSettingsMenu)
                                     scope.launch {
-                                        AddGameScoreUseCase(repository).invoke(
+                                        viewModel.addGameScore.invoke(
                                             Score(mama = scoreMama, papa = scorePapa)
                                         )
                                     }
@@ -307,7 +310,7 @@ fun WinDialog(
                     Text(
                         modifier = Modifier
                             .clickable(
-                                onClick = { closeScreen(scope, repository) },
+                                onClick = { closeScreen(viewModel, scope) },
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() }
                             ),
@@ -356,12 +359,12 @@ fun WinnerParentText(textBrush: Brush) {
 
 @SuppressLint("CoroutineCreationDuringComposition")
 private fun closeScreen(
-    scope: CoroutineScope,
-    repository: CardListRepositoryImpl
+    viewModel: AppViewModel,
+    scope: CoroutineScope
 ) {
     AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
     scope.launch {
-        AddGameScoreUseCase(repository).invoke(
+        viewModel.addGameScore.invoke(
             Score(mama = scoreMama, papa = scorePapa)
         )
     }

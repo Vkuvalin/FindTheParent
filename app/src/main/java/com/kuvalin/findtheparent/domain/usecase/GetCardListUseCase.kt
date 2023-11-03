@@ -5,8 +5,9 @@ import com.kuvalin.findtheparent.domain.repository.CardListRepository
 import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardType
 import com.kuvalin.findtheparent.presentation.gamesettings.GameSettingsState
+import javax.inject.Inject
 
-class GetCardListUseCase(
+class GetCardListUseCase @Inject constructor(
     private val cardListRepository: CardListRepository
 ) {
 

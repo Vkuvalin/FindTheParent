@@ -64,21 +64,17 @@ import androidx.compose.ui.text.font.FontWeight.Companion.W500
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.kuvalin.findtheparent.R
-import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
 import com.kuvalin.findtheparent.domain.entity.Card.Companion.UNDEFINED_ID
-import com.kuvalin.findtheparent.domain.usecase.AddFatherPhotoCardUseCase
-import com.kuvalin.findtheparent.domain.usecase.AddMatherPhotoCardUseCase
-import com.kuvalin.findtheparent.domain.usecase.GetCardStyleStateUseCase
-import com.kuvalin.findtheparent.domain.usecase.GetFatherPhotoCardUseCase
-import com.kuvalin.findtheparent.domain.usecase.GetGameScoreUseCase
-import com.kuvalin.findtheparent.domain.usecase.GetMatherPhotoCardUseCase
 import com.kuvalin.findtheparent.generals.AppInitLoadState
 import com.kuvalin.findtheparent.generals.CardStyleState
 import com.kuvalin.findtheparent.generals.CardType
 import com.kuvalin.findtheparent.generals.NoRippleTheme
+import com.kuvalin.findtheparent.generals.getApplicationComponent
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
+import com.kuvalin.findtheparent.presentation.AppViewModel
 import com.kuvalin.findtheparent.presentation.welcome.toPx
 import com.kuvalin.findtheparent.ui.theme.ParentBlue
 import com.kuvalin.findtheparent.ui.theme.ParentRed
@@ -111,13 +107,16 @@ import kotlinx.coroutines.launch
 var scoreMama = 0
 var scorePapa = 0
 
+
 @RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalTextApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenu(
-    repository: CardListRepositoryImpl,
     appInitLoadState: AppInitLoadState
 ) {
+
+    val component = getApplicationComponent()
+    val viewModel: AppViewModel = viewModel(factory = component.getViewModelFactory())
 
     //region Animation
     val rotateColor = rememberInfiniteTransition(label = "")
@@ -161,7 +160,7 @@ fun MainMenu(
                     .fillMaxHeight()
                     .background(color = Color.White)
             ) {
-                DropDownMenuStyleCard(repository, appInitLoadState)
+                DropDownMenuStyleCard(viewModel, appInitLoadState)
                 //region Switch
                 Spacer(modifier = Modifier.height(5.dp))
                 Row(
@@ -366,8 +365,8 @@ fun MainMenu(
             }
 
 
-            ParentsCardsBox(repository, appInitLoadState)
-            Score(repository, appInitLoadState)
+            ParentsCardsBox(viewModel, appInitLoadState)
+            Score(viewModel, appInitLoadState)
 
             Spacer(modifier = Modifier.height(100.dp)) // TODO плохое решение! Переделать хотя бы на 1f
             Spacer(modifier = Modifier.height(100.dp))
@@ -408,9 +407,11 @@ fun MainMenu(
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropDownMenuStyleCard(repository: CardListRepositoryImpl, appInitLoadState: AppInitLoadState) {
+fun DropDownMenuStyleCard(
+    viewModel: AppViewModel,
+    appInitLoadState: AppInitLoadState
+) {
 
-    val context = LocalContext.current
     val scope = CoroutineScope(Dispatchers.IO)
     var loadStyleComplete by remember { mutableStateOf(false) }
     var initLoad by remember { mutableStateOf(false) }
@@ -430,8 +431,8 @@ fun DropDownMenuStyleCard(repository: CardListRepositoryImpl, appInitLoadState: 
 
             try {
                 CardStyleState.putCardStyleState(
-                    GetCardStyleStateUseCase(repository).invoke(),
-                    context
+                    viewModel,
+                    viewModel.getCardStyleState.invoke()
                 )
                 loadStyleComplete = true
             } catch (e: Exception) {
@@ -511,22 +512,22 @@ fun DropDownMenuStyleCard(repository: CardListRepositoryImpl, appInitLoadState: 
                                 when (item) {
                                     items[0] -> {
                                         CardStyleState.putCardStyleState(
-                                            CardStyleState.Style1,
-                                            context
+                                            viewModel,
+                                            CardStyleState.Style1
                                         )
                                     }
 
                                     items[1] -> {
                                         CardStyleState.putCardStyleState(
-                                            CardStyleState.Style2,
-                                            context
+                                            viewModel,
+                                            CardStyleState.Style2
                                         )
                                     }
 
                                     items[2] -> {
                                         CardStyleState.putCardStyleState(
-                                            CardStyleState.Style3,
-                                            context
+                                            viewModel,
+                                            CardStyleState.Style3
                                         )
                                     }
                                 }
@@ -550,7 +551,10 @@ fun DropDownMenuStyleCard(repository: CardListRepositoryImpl, appInitLoadState: 
 //region ParentsCardsBox
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun ParentsCardsBox(repository: CardListRepositoryImpl, appInitLoadState: AppInitLoadState) {
+fun ParentsCardsBox(
+    viewModel: AppViewModel,
+    appInitLoadState: AppInitLoadState
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -561,7 +565,7 @@ fun ParentsCardsBox(repository: CardListRepositoryImpl, appInitLoadState: AppIni
                 .weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ParentCard("МАМКА", ParentRed, repository, appInitLoadState)
+            ParentCard(viewModel,"МАМКА", ParentRed, appInitLoadState)
         }
 
         Column(
@@ -569,7 +573,7 @@ fun ParentsCardsBox(repository: CardListRepositoryImpl, appInitLoadState: AppIni
                 .weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ParentCard("ПАПКА", ParentBlue, repository, appInitLoadState)
+            ParentCard(viewModel,"ПАПКА", ParentBlue, appInitLoadState)
         }
     }
 }
@@ -579,9 +583,9 @@ fun ParentsCardsBox(repository: CardListRepositoryImpl, appInitLoadState: AppIni
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun ParentCard(
+    viewModel: AppViewModel,
     name: String,
     color: Color,
-    repository: CardListRepositoryImpl,
     appInitLoadState: AppInitLoadState
 ) {
     Text(
@@ -592,7 +596,7 @@ fun ParentCard(
         color = color,
         fontSize = 32.sp
     )
-    GalleryImageSelector(name, repository, appInitLoadState)
+    GalleryImageSelector(viewModel, name, appInitLoadState)
 }
 //endregion
 
@@ -600,8 +604,8 @@ fun ParentCard(
 @SuppressLint("CoroutineCreationDuringComposition", "Recycle")
 @Composable
 fun GalleryImageSelector(
+    viewModel: AppViewModel,
     name: String,
-    repository: CardListRepositoryImpl,
     appInitLoadState: AppInitLoadState
 ) {
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -623,11 +627,11 @@ fun GalleryImageSelector(
             }
             selectedImageUri = when (name) {
                 "МАМКА" -> {
-                    GetMatherPhotoCardUseCase(repository).invoke(CardType.MATHER)?.imageUri
+                    viewModel.getMatherPhotoCard.invoke(CardType.MATHER)?.imageUri
                 }
 
                 "ПАПКА" -> {
-                    GetFatherPhotoCardUseCase(repository).invoke(CardType.FATHER)?.imageUri
+                    viewModel.getFatherPhotoCard.invoke(CardType.FATHER)?.imageUri
                 }
 
                 else -> {
@@ -679,11 +683,11 @@ fun GalleryImageSelector(
                 scope.launch {
                     when (name) {
                         "МАМКА" -> {
-                            AddMatherPhotoCardUseCase(repository).invoke(UNDEFINED_ID, uri)
+                            viewModel.addMatherPhotoCard.invoke(UNDEFINED_ID, uri)
                         }
 
                         "ПАПКА" -> {
-                            AddFatherPhotoCardUseCase(repository).invoke(UNDEFINED_ID, uri)
+                            viewModel.addFatherPhotoCard.invoke(UNDEFINED_ID, uri)
                         }
 
                         else -> {}
@@ -720,7 +724,10 @@ fun GalleryImageSelector(
 //region Score
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun Score(repository: CardListRepositoryImpl, appInitLoadState: AppInitLoadState) {
+fun Score(
+    viewModel: AppViewModel,
+    appInitLoadState: AppInitLoadState
+) {
 
     val scope = CoroutineScope(Dispatchers.IO)
     var loadCompleted by remember { mutableStateOf(false) }
@@ -738,8 +745,8 @@ fun Score(repository: CardListRepositoryImpl, appInitLoadState: AppInitLoadState
                 }
             }
 
-            scoreMama = GetGameScoreUseCase(repository).invoke().mama
-            scorePapa = GetGameScoreUseCase(repository).invoke().papa
+            scoreMama = viewModel.getGameScore.invoke().mama
+            scorePapa = viewModel.getGameScore.invoke().papa
             loadCompleted = true
         }
     }

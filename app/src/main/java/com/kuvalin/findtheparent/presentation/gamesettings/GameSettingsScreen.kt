@@ -1,6 +1,5 @@
 package com.kuvalin.findtheparent.presentation.gamesettings
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
@@ -40,20 +39,17 @@ import androidx.compose.ui.text.font.FontWeight.Companion.W700
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kuvalin.findtheparent.domain.entity.Card
-import com.kuvalin.findtheparent.domain.usecase.GetCardListUseCase
 import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardStyleState
 import com.kuvalin.findtheparent.generals.CardType
-import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.generals.NoRippleTheme
 import com.kuvalin.findtheparent.generals.OnBackPressButton
-import com.kuvalin.findtheparent.presentation.game.clearList
-import com.kuvalin.findtheparent.presentation.main.MainActivity
+import com.kuvalin.findtheparent.generals.getApplicationComponent
+import com.kuvalin.findtheparent.navigation.AppNavigationScreens
+import com.kuvalin.findtheparent.presentation.AppViewModel
 import com.kuvalin.findtheparent.presentation.welcome.toPx
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 
 enum class ButtonType {
@@ -62,8 +58,10 @@ enum class ButtonType {
 
 var buttonType = ButtonType.INIT
 
-suspend fun getCardList(repository: CardListRepositoryImpl, gameSettingsState: GameSettingsState): List<Card>{
-    return GetCardListUseCase(repository)(
+
+
+suspend fun getCardList(viewModel: AppViewModel, gameSettingsState: GameSettingsState): List<Card>{
+    return viewModel.getCardList(
         style = when(CardStyleState.cardStyleState.value){
             is CardStyleState.Style1 -> { CardStyle.STYLE1 }
             is CardStyleState.Style2 -> { CardStyle.STYLE2 }
@@ -77,11 +75,12 @@ suspend fun getCardList(repository: CardListRepositoryImpl, gameSettingsState: G
 
 @Composable
 fun GameSettingsMenu(
-    repository: CardListRepositoryImpl,
     onBackPress: () -> Unit
 ) {
 
     val context = LocalContext.current
+    val component = getApplicationComponent()
+    val viewModel: AppViewModel = viewModel(factory = component.getViewModelFactory())
 
     //region ColorsButtonAnimation
     // Easy
@@ -301,7 +300,7 @@ fun GameSettingsMenu(
                     AppNavigationScreens.Game(
                         context = context,
                         gameSettingsState = GameSettingsState.Easy,
-                        cardList = getCardList(repository, GameSettingsState.Easy)
+                        cardList = getCardList(viewModel, GameSettingsState.Easy)
                     )
                 )
             }
@@ -311,7 +310,7 @@ fun GameSettingsMenu(
                     AppNavigationScreens.Game(
                         context = context,
                         gameSettingsState = GameSettingsState.Medium,
-                        cardList = getCardList(repository, GameSettingsState.Medium)
+                        cardList = getCardList(viewModel, GameSettingsState.Medium)
                     )
                 )
             }
@@ -321,7 +320,7 @@ fun GameSettingsMenu(
                     AppNavigationScreens.Game(
                         context = context,
                         gameSettingsState = GameSettingsState.Hard,
-                        cardList = getCardList(repository, GameSettingsState.Hard)
+                        cardList = getCardList(viewModel, GameSettingsState.Hard)
                     )
                 )
             }
@@ -331,7 +330,7 @@ fun GameSettingsMenu(
                     AppNavigationScreens.Game(
                         context = context,
                         gameSettingsState = GameSettingsState.Special,
-                        cardList = getCardList(repository, GameSettingsState.Special)
+                        cardList = getCardList(viewModel, GameSettingsState.Special)
                     )
                 )
             }

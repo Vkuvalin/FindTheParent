@@ -29,7 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-// TODO ВРЕМЕННАЯ МЕРА
+// TODO Правильно ли так делать?
 //region cardsCollectionStyle1
 val cardsCollectionStyle1 = listOf( // 16
     R.drawable.style_1_camel,
