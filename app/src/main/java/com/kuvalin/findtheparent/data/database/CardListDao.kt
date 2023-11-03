@@ -5,10 +5,12 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.kuvalin.findtheparent.data.model.AppInitLoadStateDbModel
 import com.kuvalin.findtheparent.data.model.CardDbModel
 import com.kuvalin.findtheparent.data.model.CardStyleStateDbModel
 import com.kuvalin.findtheparent.data.model.InitialLoadState
 import com.kuvalin.findtheparent.data.model.ScoreDbModel
+import com.kuvalin.findtheparent.generals.AppInitLoadState
 import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardType
 
@@ -49,9 +51,15 @@ interface CardListDao {
     suspend fun getFatherPhotoCard(type: CardType): CardDbModel
 
 
+    // Бля, случайно дважды создал один и тот же state по сути, но похуй в целом
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addInitialLoadState(initialLoadState: InitialLoadState)
     @Query("SELECT * FROM initial_load_state")
     suspend fun getInitialLoadState(): InitialLoadState
 
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addAppInitLoadState(appInitLoadStateDbModel: AppInitLoadStateDbModel)
+    @Query("SELECT * FROM app_init_load_state")
+    suspend fun getAppInitLoadState(): AppInitLoadStateDbModel
 }

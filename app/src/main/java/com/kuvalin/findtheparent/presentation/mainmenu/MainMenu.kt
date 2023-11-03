@@ -4,7 +4,6 @@ package com.kuvalin.findtheparent.presentation.mainmenu
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -37,6 +36,8 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -62,17 +63,18 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight.Companion.W500
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberImagePainter
+import androidx.core.net.toUri
+import coil.compose.rememberAsyncImagePainter
 import com.kuvalin.findtheparent.R
 import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
 import com.kuvalin.findtheparent.domain.entity.Card.Companion.UNDEFINED_ID
-import com.kuvalin.findtheparent.domain.entity.Score
 import com.kuvalin.findtheparent.domain.usecase.AddFatherPhotoCardUseCase
 import com.kuvalin.findtheparent.domain.usecase.AddMatherPhotoCardUseCase
 import com.kuvalin.findtheparent.domain.usecase.GetCardStyleStateUseCase
 import com.kuvalin.findtheparent.domain.usecase.GetFatherPhotoCardUseCase
 import com.kuvalin.findtheparent.domain.usecase.GetGameScoreUseCase
 import com.kuvalin.findtheparent.domain.usecase.GetMatherPhotoCardUseCase
+import com.kuvalin.findtheparent.generals.AppInitLoadState
 import com.kuvalin.findtheparent.generals.CardStyleState
 import com.kuvalin.findtheparent.generals.CardType
 import com.kuvalin.findtheparent.generals.NoRippleTheme
@@ -80,6 +82,22 @@ import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.presentation.welcome.toPx
 import com.kuvalin.findtheparent.ui.theme.ParentBlue
 import com.kuvalin.findtheparent.ui.theme.ParentRed
+import com.kuvalin.findtheparent.ui.theme.checkedBorderColor
+import com.kuvalin.findtheparent.ui.theme.checkedIconColor
+import com.kuvalin.findtheparent.ui.theme.checkedThumbColor
+import com.kuvalin.findtheparent.ui.theme.checkedTrackColor
+import com.kuvalin.findtheparent.ui.theme.disabledCheckedBorderColor
+import com.kuvalin.findtheparent.ui.theme.disabledCheckedIconColor
+import com.kuvalin.findtheparent.ui.theme.disabledCheckedThumbColor
+import com.kuvalin.findtheparent.ui.theme.disabledCheckedTrackColor
+import com.kuvalin.findtheparent.ui.theme.disabledUncheckedBorderColor
+import com.kuvalin.findtheparent.ui.theme.disabledUncheckedIconColor
+import com.kuvalin.findtheparent.ui.theme.disabledUncheckedThumbColor
+import com.kuvalin.findtheparent.ui.theme.disabledUncheckedTrackColor
+import com.kuvalin.findtheparent.ui.theme.uncheckedBorderColor
+import com.kuvalin.findtheparent.ui.theme.uncheckedIconColor
+import com.kuvalin.findtheparent.ui.theme.uncheckedThumbColor
+import com.kuvalin.findtheparent.ui.theme.uncheckedTrackColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -96,7 +114,10 @@ var scorePapa = 0
 @RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalTextApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun MainMenu(repository: CardListRepositoryImpl) {
+fun MainMenu(
+    repository: CardListRepositoryImpl,
+    appInitLoadState: AppInitLoadState
+) {
 
     //region Animation
     val rotateColor = rememberInfiniteTransition(label = "")
@@ -124,6 +145,11 @@ fun MainMenu(repository: CardListRepositoryImpl) {
     val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp
 
+    var checkedSound by remember { mutableStateOf(false) }
+    var checkedBackground by remember { mutableStateOf(false) }
+    var checkedMiniature by remember { mutableStateOf(false) }
+    var checkedScore by remember { mutableStateOf(false) }
+
 
 
     ModalNavigationDrawer(
@@ -135,7 +161,152 @@ fun MainMenu(repository: CardListRepositoryImpl) {
                     .fillMaxHeight()
                     .background(color = Color.White)
             ) {
-                DropDownMenuStyleCard(repository)
+                DropDownMenuStyleCard(repository, appInitLoadState)
+                //region Switch
+                Spacer(modifier = Modifier.height(5.dp))
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 5.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Звук", fontSize=16.sp)
+                    Switch(
+                        enabled = true,
+                        checked = checkedSound,
+                        colors = SwitchDefaults.colors(
+                            disabledUncheckedBorderColor = disabledUncheckedBorderColor,
+                            disabledUncheckedThumbColor = disabledUncheckedThumbColor,
+                            disabledUncheckedTrackColor = disabledUncheckedTrackColor,
+                            disabledUncheckedIconColor = disabledUncheckedIconColor,
+                            disabledCheckedBorderColor = disabledCheckedBorderColor,
+                            disabledCheckedTrackColor = disabledCheckedTrackColor,
+                            disabledCheckedThumbColor = disabledCheckedThumbColor,
+                            disabledCheckedIconColor = disabledCheckedIconColor,
+                            uncheckedBorderColor = uncheckedBorderColor,
+                            uncheckedThumbColor = uncheckedThumbColor,
+                            uncheckedTrackColor = uncheckedTrackColor,
+                            uncheckedIconColor = uncheckedIconColor,
+                            checkedBorderColor = checkedBorderColor,
+                            checkedTrackColor = checkedTrackColor,
+                            checkedThumbColor = checkedThumbColor,
+                            checkedIconColor = checkedIconColor
+                        ),
+                        onCheckedChange = {mChecked ->
+                            checkedSound = mChecked
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(5.dp))
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 5.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Заставка", fontSize=16.sp)
+                    Switch(
+                        enabled = true,
+                        checked = checkedMiniature,
+                        colors = SwitchDefaults.colors(
+                            disabledUncheckedBorderColor = disabledUncheckedBorderColor,
+                            disabledUncheckedThumbColor = disabledUncheckedThumbColor,
+                            disabledUncheckedTrackColor = disabledUncheckedTrackColor,
+                            disabledUncheckedIconColor = disabledUncheckedIconColor,
+                            disabledCheckedBorderColor = disabledCheckedBorderColor,
+                            disabledCheckedTrackColor = disabledCheckedTrackColor,
+                            disabledCheckedThumbColor = disabledCheckedThumbColor,
+                            disabledCheckedIconColor = disabledCheckedIconColor,
+                            uncheckedBorderColor = uncheckedBorderColor,
+                            uncheckedThumbColor = uncheckedThumbColor,
+                            uncheckedTrackColor = uncheckedTrackColor,
+                            uncheckedIconColor = uncheckedIconColor,
+                            checkedBorderColor = checkedBorderColor,
+                            checkedTrackColor = checkedTrackColor,
+                            checkedThumbColor = checkedThumbColor,
+                            checkedIconColor = checkedIconColor
+                        ),
+                        onCheckedChange = {mChecked ->
+                            checkedMiniature = mChecked
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(5.dp))
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 5.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Фон", fontSize=16.sp)
+                    Switch(
+                        enabled = true,
+                        checked = checkedBackground,
+                        colors = SwitchDefaults.colors(
+                            disabledUncheckedBorderColor = disabledUncheckedBorderColor,
+                            disabledUncheckedThumbColor = disabledUncheckedThumbColor,
+                            disabledUncheckedTrackColor = disabledUncheckedTrackColor,
+                            disabledUncheckedIconColor = disabledUncheckedIconColor,
+                            disabledCheckedBorderColor = disabledCheckedBorderColor,
+                            disabledCheckedTrackColor = disabledCheckedTrackColor,
+                            disabledCheckedThumbColor = disabledCheckedThumbColor,
+                            disabledCheckedIconColor = disabledCheckedIconColor,
+                            uncheckedBorderColor = uncheckedBorderColor,
+                            uncheckedThumbColor = uncheckedThumbColor,
+                            uncheckedTrackColor = uncheckedTrackColor,
+                            uncheckedIconColor = uncheckedIconColor,
+                            checkedBorderColor = checkedBorderColor,
+                            checkedTrackColor = checkedTrackColor,
+                            checkedThumbColor = checkedThumbColor,
+                            checkedIconColor = checkedIconColor
+                        ),
+                        onCheckedChange = {mChecked ->
+                            checkedBackground = mChecked
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(5.dp))
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 5.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Обнулить счёт", fontSize=16.sp)
+                    Switch(
+                        enabled = true,
+                        checked = checkedScore,
+                        colors = SwitchDefaults.colors(
+                            disabledUncheckedBorderColor = disabledUncheckedBorderColor,
+                            disabledUncheckedThumbColor = disabledUncheckedThumbColor,
+                            disabledUncheckedTrackColor = disabledUncheckedTrackColor,
+                            disabledUncheckedIconColor = disabledUncheckedIconColor,
+                            disabledCheckedBorderColor = disabledCheckedBorderColor,
+                            disabledCheckedTrackColor = disabledCheckedTrackColor,
+                            disabledCheckedThumbColor = disabledCheckedThumbColor,
+                            disabledCheckedIconColor = disabledCheckedIconColor,
+                            uncheckedBorderColor = uncheckedBorderColor,
+                            uncheckedThumbColor = uncheckedThumbColor,
+                            uncheckedTrackColor = uncheckedTrackColor,
+                            uncheckedIconColor = uncheckedIconColor,
+                            checkedBorderColor = checkedBorderColor,
+                            checkedTrackColor = checkedTrackColor,
+                            checkedThumbColor = checkedThumbColor,
+                            checkedIconColor = checkedIconColor
+                        ),
+                        onCheckedChange = {mChecked ->
+                            checkedScore = mChecked
+                        }
+                    )
+                }
+                //endregion
             }
         },
     ) {
@@ -195,8 +366,8 @@ fun MainMenu(repository: CardListRepositoryImpl) {
             }
 
 
-            ParentsCardsBox(repository)
-            Score(repository)
+            ParentsCardsBox(repository, appInitLoadState)
+            Score(repository, appInitLoadState)
 
             Spacer(modifier = Modifier.height(100.dp)) // TODO плохое решение! Переделать хотя бы на 1f
             Spacer(modifier = Modifier.height(100.dp))
@@ -230,7 +401,6 @@ fun MainMenu(repository: CardListRepositoryImpl) {
             }
         }
     }
-
 }
 
 
@@ -238,7 +408,7 @@ fun MainMenu(repository: CardListRepositoryImpl) {
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropDownMenuStyleCard(repository: CardListRepositoryImpl) {
+fun DropDownMenuStyleCard(repository: CardListRepositoryImpl, appInitLoadState: AppInitLoadState) {
 
     val context = LocalContext.current
     val scope = CoroutineScope(Dispatchers.IO)
@@ -247,7 +417,17 @@ fun DropDownMenuStyleCard(repository: CardListRepositoryImpl) {
 
     if (!loadStyleComplete) {
         scope.launch {
-            delay(500)
+
+            when (appInitLoadState) {
+                is AppInitLoadState.Initial -> {
+                    delay(500)
+                }
+
+                is AppInitLoadState.Successive -> {
+                    delay(300)
+                }
+            }
+
             try {
                 CardStyleState.putCardStyleState(
                     GetCardStyleStateUseCase(repository).invoke(),
@@ -299,7 +479,7 @@ fun DropDownMenuStyleCard(repository: CardListRepositoryImpl) {
                 readOnly = true,
                 value = selected,
                 onValueChange = {},
-                label = { Text("Стиль карточек") },
+                label = { Text("Стиль карточек", fontSize=12.sp) },
                 trailingIcon = {
                     ExposedDropdownMenuDefaults
                         .TrailingIcon(
@@ -370,7 +550,7 @@ fun DropDownMenuStyleCard(repository: CardListRepositoryImpl) {
 //region ParentsCardsBox
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun ParentsCardsBox(repository: CardListRepositoryImpl) {
+fun ParentsCardsBox(repository: CardListRepositoryImpl, appInitLoadState: AppInitLoadState) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -381,7 +561,7 @@ fun ParentsCardsBox(repository: CardListRepositoryImpl) {
                 .weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ParentCard("МАМКА", ParentRed, repository)
+            ParentCard("МАМКА", ParentRed, repository, appInitLoadState)
         }
 
         Column(
@@ -389,7 +569,7 @@ fun ParentsCardsBox(repository: CardListRepositoryImpl) {
                 .weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ParentCard("ПАПКА", ParentBlue, repository)
+            ParentCard("ПАПКА", ParentBlue, repository, appInitLoadState)
         }
     }
 }
@@ -401,7 +581,8 @@ fun ParentsCardsBox(repository: CardListRepositoryImpl) {
 fun ParentCard(
     name: String,
     color: Color,
-    repository: CardListRepositoryImpl
+    repository: CardListRepositoryImpl,
+    appInitLoadState: AppInitLoadState
 ) {
     Text(
         modifier = Modifier
@@ -411,61 +592,102 @@ fun ParentCard(
         color = color,
         fontSize = 32.sp
     )
-    GalleryImageSelector(name, repository)
+    GalleryImageSelector(name, repository, appInitLoadState)
 }
 //endregion
 
 //region PickImageFromGallery
-@SuppressLint("CoroutineCreationDuringComposition")
+@SuppressLint("CoroutineCreationDuringComposition", "Recycle")
 @Composable
-fun GalleryImageSelector(name: String, repository: CardListRepositoryImpl) {
+fun GalleryImageSelector(
+    name: String,
+    repository: CardListRepositoryImpl,
+    appInitLoadState: AppInitLoadState
+) {
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
+    val context = LocalContext.current
     val scope = CoroutineScope(Dispatchers.IO)
     var initLoad by remember { mutableStateOf(false) }
 
     if (!initLoad) {
         scope.launch {
-            delay(1000)
-            selectedImageUri = when (name) {
-                "МАМКА" -> { GetMatherPhotoCardUseCase(repository).invoke(CardType.MATHER)?.imageUri }
-                "ПАПКА" -> { GetFatherPhotoCardUseCase(repository).invoke(CardType.FATHER)?.imageUri }
-                else -> {null}
+            when (appInitLoadState) {
+                is AppInitLoadState.Initial -> {
+                    delay(800)
+                }
+
+                is AppInitLoadState.Successive -> {
+                    delay(300)
+                }
             }
-            Log.d("recomposition", "1111111111111111111 --> ${selectedImageUri.toString()}")
+            selectedImageUri = when (name) {
+                "МАМКА" -> {
+                    GetMatherPhotoCardUseCase(repository).invoke(CardType.MATHER)?.imageUri
+                }
+
+                "ПАПКА" -> {
+                    GetFatherPhotoCardUseCase(repository).invoke(CardType.FATHER)?.imageUri
+                }
+
+                else -> {
+                    null
+                }
+            }
             initLoad = true
         }
     }
 
-
     if (initLoad) {
+
+        // Это вариант с обычным получением фотки, без сохранения её во внутреннюю память
+        // https://translated.turbopages.org/proxy_u/en-ru.ru.46d9e2c2-65420c09-fa180ffd-74722d776562/https/stackoverflow.com/questions/72025124/save-and-show-picked-picture-by-uri-after-app-restart
+//        val getContent = rememberLauncherForActivityResult(
+//            contract = ActivityResultContracts.GetContent()
+//        ) { uri: Uri? ->
+//            selectedImageUri = uri
+//        }
+
         val getContent = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()
-        ) { uri: Uri? ->
-            selectedImageUri = uri
+        ) { newUri: Uri? ->
+            if (newUri == null) return@rememberLauncherForActivityResult
+
+            val input = context.contentResolver.openInputStream(newUri)
+                ?: return@rememberLauncherForActivityResult
+            val outputFile = context.filesDir.resolve("profilePic${(1..1_000_000).random()}.jpg")
+            input.copyTo(outputFile.outputStream())
+            selectedImageUri = outputFile.toUri()
         }
+
+
+
 
         Box(
             modifier = Modifier
                 .size(150.dp)
         ) {
-                Image(
-                    painter = if(selectedImageUri != null)
-                        rememberImagePainter(data = selectedImageUri)
-                    else painterResource(if (name == "МАМКА") R.drawable.mama else R.drawable.papa),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
-                )
+            Image(
+                painter = if (selectedImageUri != null)
+                    rememberAsyncImagePainter(model = selectedImageUri)
+                else painterResource(if (name == "МАМКА") R.drawable.mama else R.drawable.papa),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
 
             selectedImageUri?.let { uri ->
                 scope.launch {
                     when (name) {
-                        "МАМКА" -> { AddMatherPhotoCardUseCase(repository).invoke(UNDEFINED_ID, uri) }
-                        "ПАПКА" -> { AddFatherPhotoCardUseCase(repository).invoke(UNDEFINED_ID, uri) }
+                        "МАМКА" -> {
+                            AddMatherPhotoCardUseCase(repository).invoke(UNDEFINED_ID, uri)
+                        }
+
+                        "ПАПКА" -> {
+                            AddFatherPhotoCardUseCase(repository).invoke(UNDEFINED_ID, uri)
+                        }
+
                         else -> {}
                     }
-                    Log.d("recomposition", "22222222222222222222 selectedImageUri --> ${selectedImageUri.toString()}")
-                    Log.d("recomposition", "22222222222222222222 uri --> $uri")
                 }
             }
         }
@@ -476,8 +698,6 @@ fun GalleryImageSelector(name: String, repository: CardListRepositoryImpl) {
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(Color.Cyan, Color.Magenta),
-    //                            start = Offset(0.dp.toPx(), animationVector.dp.toPx()),
-    //                            end = Offset(animationVector2.dp.toPx(), -animationVector.dp.toPx()),
                         start = Offset(0.dp.toPx(), 0.dp.toPx()),
                         end = Offset(0.dp.toPx(), 0.dp.toPx()),
                         tileMode = TileMode.Mirror,
@@ -500,14 +720,24 @@ fun GalleryImageSelector(name: String, repository: CardListRepositoryImpl) {
 //region Score
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun Score(repository: CardListRepositoryImpl) {
+fun Score(repository: CardListRepositoryImpl, appInitLoadState: AppInitLoadState) {
 
     val scope = CoroutineScope(Dispatchers.IO)
     var loadCompleted by remember { mutableStateOf(false) }
 
     if (!loadCompleted) {
         scope.launch {
-            delay(1000)
+
+            when (appInitLoadState) {
+                is AppInitLoadState.Initial -> {
+                    delay(800)
+                }
+
+                is AppInitLoadState.Successive -> {
+                    delay(300)
+                }
+            }
+
             scoreMama = GetGameScoreUseCase(repository).invoke().mama
             scorePapa = GetGameScoreUseCase(repository).invoke().papa
             loadCompleted = true

@@ -1,6 +1,8 @@
 package com.kuvalin.findtheparent.presentation.game
 
 import android.annotation.SuppressLint
+import android.media.MediaPlayer
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -47,7 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import com.kuvalin.findtheparent.R
 import com.kuvalin.findtheparent.data.repository.CardListRepositoryImpl
 import com.kuvalin.findtheparent.domain.entity.Card
@@ -62,6 +64,7 @@ import com.kuvalin.findtheparent.ui.theme.ParentBlue
 import com.kuvalin.findtheparent.ui.theme.ParentRed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -77,29 +80,34 @@ fun Game(
     repository: CardListRepositoryImpl,
     cardList: List<Card>,
     gameSettingsState: GameSettingsState,
-    onBackPress: () -> Unit
+    onBackPress: () -> Unit,
+    soundCard: MediaPlayer,
+    soundWin: MediaPlayer
 ) {
+    val scope = CoroutineScope(Dispatchers.Default)
 
-    val rotateColor = rememberInfiniteTransition(label = "")
-    val rotateColorAnimation by rotateColor.animateFloat(
-        initialValue = -360f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 10000),
-            repeatMode = RepeatMode.Reverse
-        ), label = ""
-    )
-    val rotateColor2 = rememberInfiniteTransition(label = "")
-    val rotateColorAnimation2 by rotateColor2.animateFloat(
-        initialValue = 360f,
-        targetValue = -360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 4000),
-            repeatMode = RepeatMode.Reverse
-        ), label = ""
-    )
 
     Column {
+        //region Animation
+        val rotateColor = rememberInfiniteTransition(label = "")
+        val rotateColorAnimation by rotateColor.animateFloat(
+            initialValue = -360f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 10000),
+                repeatMode = RepeatMode.Reverse
+            ), label = ""
+        )
+        val rotateColor2 = rememberInfiniteTransition(label = "")
+        val rotateColorAnimation2 by rotateColor2.animateFloat(
+            initialValue = 360f,
+            targetValue = -360f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 4000),
+                repeatMode = RepeatMode.Reverse
+            ), label = ""
+        )
+        //endregion
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -128,7 +136,7 @@ fun Game(
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        FlipCard(cardList[position], gameSettingsState.cardSize, position)
+                        FlipCard(cardList[position], gameSettingsState.cardSize, position, soundCard, scope)
                     }
                 }
             }
@@ -136,9 +144,15 @@ fun Game(
     }
     OnBackPressButton(onBackPress) { clearList() }
 
-    if (MAMA_ID in selectedList[2] || PAPA_ID in selectedList[2]) {
-        WinDialog(rotateColorAnimation, rotateColorAnimation2, repository)
+    if ((MAMA_ID in selectedList[2] || PAPA_ID in selectedList[2]) || (selectedList[2].size == 10)) {
+        WinDialog(repository, soundWin, scope)
     }
+
+    BackHandler {
+        onBackPress()
+        clearList()
+    }
+
 }
 
 
@@ -147,14 +161,37 @@ fun Game(
 @OptIn(ExperimentalTextApi::class)
 @Composable
 fun WinDialog(
-    rotateColorAnimation: Float,
-    rotateColorAnimation2: Float,
-    repository: CardListRepositoryImpl
+    repository: CardListRepositoryImpl,
+    mMediaPlayer: MediaPlayer,
+    scopeExternal: CoroutineScope
 ) {
+
+    //region Animation
+    val rotateColor = rememberInfiniteTransition(label = "")
+    val rotateColorAnimation by rotateColor.animateFloat(
+        initialValue = -360f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 10000),
+            repeatMode = RepeatMode.Reverse
+        ), label = ""
+    )
+    val rotateColor2 = rememberInfiniteTransition(label = "")
+    val rotateColorAnimation2 by rotateColor2.animateFloat(
+        initialValue = 360f,
+        targetValue = -360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 4000),
+            repeatMode = RepeatMode.Reverse
+        ), label = ""
+    )
+    //endregion
 
     val scope = CoroutineScope(Dispatchers.IO)
     var loadCompleted by remember { mutableStateOf(false) }
+    var soundPlayState by remember { mutableStateOf(false) }
 
+    if (!soundPlayState) { soundPlayState = playSound(mMediaPlayer, scopeExternal) }
 
     if (!loadCompleted) {
         scope.launch {
@@ -182,15 +219,7 @@ fun WinDialog(
 
         AlertDialog(
             modifier = Modifier,
-            onDismissRequest = {
-                AppNavigationScreens.putScreenState(AppNavigationScreens.GameSettingsMenu)
-                scope.launch {
-                    AddGameScoreUseCase(repository).invoke(
-                        Score(mama = scoreMama, papa = scorePapa)
-                    )
-                }
-                clearList()
-            },
+            onDismissRequest = { closeScreen(scope, repository) },
             title = {
                 WinnerParentText(textBrush)
             },
@@ -278,15 +307,7 @@ fun WinDialog(
                     Text(
                         modifier = Modifier
                             .clickable(
-                                onClick = {
-                                    AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
-                                    scope.launch {
-                                        AddGameScoreUseCase(repository).invoke(
-                                            Score(mama = scoreMama, papa = scorePapa)
-                                        )
-                                    }
-                                    clearList()
-                                },
+                                onClick = { closeScreen(scope, repository) },
                                 indication = null,
                                 interactionSource = remember { MutableInteractionSource() }
                             ),
@@ -300,6 +321,8 @@ fun WinDialog(
         )
     }
 }
+
+
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -317,10 +340,10 @@ fun WinnerParentText(textBrush: Brush) {
             style = TextStyle(brush = textBrush)
         )
         Text(
-            text = "МАМКА",
+            text = if (MAMA_ID in selectedList[2]) "МАМКА" else "ПАПКА",
             fontSize = 24.sp,
             fontWeight = FontWeight.W500,
-            color = ParentRed
+            color = if (MAMA_ID in selectedList[2]) ParentRed else ParentBlue
         )
         Text(
             text = "!",
@@ -330,6 +353,21 @@ fun WinnerParentText(textBrush: Brush) {
         )
     }
 }
+
+@SuppressLint("CoroutineCreationDuringComposition")
+private fun closeScreen(
+    scope: CoroutineScope,
+    repository: CardListRepositoryImpl
+) {
+    AppNavigationScreens.putScreenState(AppNavigationScreens.MainMenu)
+    scope.launch {
+        AddGameScoreUseCase(repository).invoke(
+            Score(mama = scoreMama, papa = scorePapa)
+        )
+    }
+    clearList()
+}
+
 //endregion
 
 //region selectedList
@@ -360,7 +398,7 @@ suspend fun onWaitClickButton() {
 
 //region FlipCard
 @Composable
-fun FlipCard(card: Card, cardSize: Dp, position: Int) {
+fun FlipCard(card: Card, cardSize: Dp, position: Int, mMediaPlayer: MediaPlayer, scopeExternal: CoroutineScope) {
 
     var isFrontCardVisible by remember { mutableStateOf(true) }
     val flipCard: () -> Unit = { isFrontCardVisible = !isFrontCardVisible }
@@ -419,7 +457,7 @@ fun FlipCard(card: Card, cardSize: Dp, position: Int) {
                 )
         ) {
             if (isFrontCardVisible) {
-                FrontCard(card, cardSize, checkingSelection)
+                FrontCard(card, cardSize, checkingSelection, mMediaPlayer, scopeExternal)
             } else {
                 BackCard(card, cardSize, checkingSelection)
             }
@@ -429,15 +467,18 @@ fun FlipCard(card: Card, cardSize: Dp, position: Int) {
 }
 
 @Composable
-fun FrontCard(card: Card, cardSize: Dp, checkingSelection: () -> Unit) {
+fun FrontCard(card: Card, cardSize: Dp, checkingSelection: () -> Unit, mMediaPlayer: MediaPlayer, scope: CoroutineScope) {
+
+    var soundPlayState by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .background(brush = Brush.linearGradient(listOf(Color.Cyan, Color.Magenta)), alpha = 0f)
             .size(cardSize)
             .clickable(onClick = {
-                if (card.id !in selectedList[2]) {
+                if ((card.id !in selectedList[2]) && !(selectedList[0][0] != 0 && selectedList[0][1] != 0)) {
                     checkingSelection()
+                    if (!soundPlayState) { soundPlayState = playSound(mMediaPlayer, scope) }
                 }
             }),
         contentAlignment = Alignment.Center
@@ -459,7 +500,7 @@ fun BackCard(card: Card, cardSize: Dp, checkingSelection: () -> Unit) {
     Box(
         modifier = Modifier
             .clickable(onClick = {
-                if (card.id !in selectedList[2]) {
+                if ((card.id !in selectedList[2]) && !(selectedList[0][0] != 0 && selectedList[0][1] != 0)) {
                     checkingSelection()
                 }
             })
@@ -467,7 +508,7 @@ fun BackCard(card: Card, cardSize: Dp, checkingSelection: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Image(
-            painter = if (card.imageUri != null) rememberImagePainter(data = card.imageUri)
+            painter = if (card.imageUri != null) rememberAsyncImagePainter(model = card.imageUri)
             else painterResource(card.resourceId),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
@@ -478,6 +519,11 @@ fun BackCard(card: Card, cardSize: Dp, checkingSelection: () -> Unit) {
 }
 //endregion
 
+
+@SuppressLint("CoroutineCreationDuringComposition")
+private fun playSound(mMediaPlayer: MediaPlayer, scope: CoroutineScope): Boolean {
+    return !(scope.async {mMediaPlayer.start() }.isCompleted)
+}
 
 
 

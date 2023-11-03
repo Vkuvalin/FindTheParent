@@ -3,18 +3,14 @@ package com.kuvalin.findtheparent.data.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import com.kuvalin.findtheparent.R
 import com.kuvalin.findtheparent.data.database.AppDatabase
-import com.kuvalin.findtheparent.data.database.cardId
-import com.kuvalin.findtheparent.data.database.cardsCollectionStyle1
-import com.kuvalin.findtheparent.data.database.cardsCollectionStyle2
-import com.kuvalin.findtheparent.data.database.cardsCollectionStyle3
+import com.kuvalin.findtheparent.data.database.CardListDao
 import com.kuvalin.findtheparent.data.mapper.CardMapper
 import com.kuvalin.findtheparent.data.model.InitialLoadState
 import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.domain.entity.Score
 import com.kuvalin.findtheparent.domain.repository.CardListRepository
+import com.kuvalin.findtheparent.generals.AppInitLoadState
 import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardStyleState
 import com.kuvalin.findtheparent.generals.CardType
@@ -28,9 +24,22 @@ class CardListRepositoryImpl(
     private val context: Context
 ) : CardListRepository {
 
-    private val cardListDao = AppDatabase.getInstance(context).cardListDao()
+    private val cardListDao: CardListDao = AppDatabase.getInstance(context).cardListDao()
     private val mapper = CardMapper()
+    private val scope = CoroutineScope(Dispatchers.Default)
+    private var loadState = false
 
+
+    init {
+        if (!loadState) {
+            scope.launch {
+                AppDatabase.getInstance(context).cardListDao()
+                    .addInitialLoadState(InitialLoadState(true))
+                delay(500)
+                loadState = cardListDao.getInitialLoadState().initialLoadState
+            }
+        }
+    }
 
 
     // ############ Реализация репозитория ############
@@ -45,13 +54,23 @@ class CardListRepositoryImpl(
 
 
     // CardStyleState
-    // А это же мне нужно, да?
     override suspend fun addCardStyleState(cardStyleState: CardStyleState) {
         cardListDao.addCardStyleState(mapper.mapEntityToDbModelCardStyle(cardStyleState))
     }
 
     override suspend fun getCardStyleState(): CardStyleState {
-        return mapper.mapDbModelToEntityScore(cardListDao.getCardStyleState())
+        return mapper.mapDbModelToEntityCardStyle(cardListDao.getCardStyleState())
+    }
+
+
+    // AppInitLoadState
+    override suspend fun addAppInitLoadState(appInitLoadState: AppInitLoadState) {
+        cardListDao.addAppInitLoadState(mapper.mapEntityToDbModelAppInitLoadState(appInitLoadState))
+    }
+
+    override suspend fun getAppInitLoadState(): AppInitLoadState {
+        delay(5000)
+        return mapper.mapDbModelToEntityAppInitLoadState(cardListDao.getAppInitLoadState())
     }
 
 
@@ -82,15 +101,6 @@ class CardListRepositoryImpl(
     }
 
     override suspend fun getMatherPhotoCard(type: CardType): Card {
-//        Log.d("recomposition", "repositoryMather id ${cardListDao.getMatherPhotoCard(type).id}")
-//        Log.d(
-//            "recomposition",
-//            "repositoryMather imageUri ${cardListDao.getMatherPhotoCard(type).imageUri}"
-//        )
-//        Log.d(
-//            "recomposition",
-//            "repositoryMather resourceId ${cardListDao.getMatherPhotoCard(type).resourceId}"
-//        )
         return mapper.mapDbModelToEntityCard(cardListDao.getMatherPhotoCard(type))
     }
 
@@ -111,15 +121,6 @@ class CardListRepositoryImpl(
     }
 
     override suspend fun getFatherPhotoCard(type: CardType): Card {
-//        Log.d("recomposition", "repositoryFather id ${cardListDao.getFatherPhotoCard(type).id}")
-//        Log.d(
-//            "recomposition",
-//            "repositoryFather imageUri ${cardListDao.getFatherPhotoCard(type).imageUri}"
-//        )
-//        Log.d(
-//            "recomposition",
-//            "repositoryFather resourceId ${cardListDao.getFatherPhotoCard(type).resourceId}"
-//        )
         return mapper.mapDbModelToEntityCard(cardListDao.getFatherPhotoCard(type))
     }
 
@@ -172,7 +173,7 @@ class CardListRepositoryImpl(
             is GameSettingsState.Special -> { // Максимальное количество 20
                 for (i in 1..gameSettingsState.numberCells / 2) {
                     repeat(2) {
-                        regularCollection.add(collectionUsed[i])
+                        specialCollection.add(collectionUsed[i])
                     }
                 }
                 return specialCollection.shuffled()

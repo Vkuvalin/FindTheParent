@@ -12,6 +12,8 @@ import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.kuvalin.findtheparent.R
 import com.kuvalin.findtheparent.data.mapper.CardMapper
+import com.kuvalin.findtheparent.data.model.AppInitLoadStateConverter
+import com.kuvalin.findtheparent.data.model.AppInitLoadStateDbModel
 import com.kuvalin.findtheparent.data.model.CardDbModel
 import com.kuvalin.findtheparent.data.model.CardStyleStateConverter
 import com.kuvalin.findtheparent.data.model.CardStyleStateDbModel
@@ -19,6 +21,7 @@ import com.kuvalin.findtheparent.data.model.InitialLoadState
 import com.kuvalin.findtheparent.data.model.ScoreDbModel
 import com.kuvalin.findtheparent.data.model.UriTypeConverter
 import com.kuvalin.findtheparent.domain.entity.Card
+import com.kuvalin.findtheparent.generals.AppInitLoadState
 import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardType
 import kotlinx.coroutines.CoroutineScope
@@ -108,13 +111,22 @@ private suspend fun addCardList(list: List<Int>, style: CardStyle, dao: CardList
 }
 
 
+
 @Database(entities = [
     CardDbModel::class,
     ScoreDbModel::class,
     CardStyleStateDbModel::class,
-    InitialLoadState::class],
-    version = 1, exportSchema = false)
-@TypeConverters(CardStyleStateConverter::class, UriTypeConverter::class)
+    InitialLoadState::class,
+    AppInitLoadStateDbModel::class
+                     ],
+    version = 1,
+    exportSchema = false
+)
+@TypeConverters(
+    CardStyleStateConverter::class,
+    UriTypeConverter::class,
+    AppInitLoadStateConverter::class
+)
 abstract class AppDatabase: RoomDatabase() {
     companion object {
 
@@ -157,8 +169,9 @@ abstract class AppDatabase: RoomDatabase() {
                         scope.launch {
                             val dao = getInstance(context).cardListDao()
                             dao.addInitialLoadState(InitialLoadState(false))
+                            dao.addAppInitLoadState(AppInitLoadStateDbModel(Card.UNDEFINED_ID, AppInitLoadState.Initial))
                             dao.addGameScore(ScoreDbModel(Card.UNDEFINED_ID, 0, 0))
-                            Log.d("DEBUG", "${dao.getGameScore()}")
+
 
                             dao.addMatherPhotoCard(
                                 CardDbModel(

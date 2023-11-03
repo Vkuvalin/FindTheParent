@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.domain.entity.Score
+import com.kuvalin.findtheparent.generals.AppInitLoadState
 import com.kuvalin.findtheparent.generals.CardStyle
 import com.kuvalin.findtheparent.generals.CardStyleState
 import com.kuvalin.findtheparent.generals.CardType
@@ -15,8 +16,11 @@ interface CardListRepository {
     suspend fun getGameScore(): Score
 
 
-    suspend fun addCardStyleState(cardStyleState: CardStyleState) // А это же мне нужно, да?
-    suspend fun getCardStyleState(): CardStyleState // А это же мне нужно, да?
+    suspend fun addCardStyleState(cardStyleState: CardStyleState)
+    suspend fun getCardStyleState(): CardStyleState
+
+    suspend fun addAppInitLoadState(appInitLoadState: AppInitLoadState)
+    suspend fun getAppInitLoadState(): AppInitLoadState
 
 
     suspend fun getCardList(

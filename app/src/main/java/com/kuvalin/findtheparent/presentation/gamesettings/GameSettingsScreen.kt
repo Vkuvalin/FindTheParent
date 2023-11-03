@@ -1,6 +1,7 @@
 package com.kuvalin.findtheparent.presentation.gamesettings
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
@@ -48,6 +49,7 @@ import com.kuvalin.findtheparent.generals.CardType
 import com.kuvalin.findtheparent.navigation.AppNavigationScreens
 import com.kuvalin.findtheparent.generals.NoRippleTheme
 import com.kuvalin.findtheparent.generals.OnBackPressButton
+import com.kuvalin.findtheparent.presentation.game.clearList
 import com.kuvalin.findtheparent.presentation.main.MainActivity
 import com.kuvalin.findtheparent.presentation.welcome.toPx
 import kotlinx.coroutines.CoroutineScope
@@ -338,9 +340,13 @@ fun GameSettingsMenu(
 
     }
 
+    BackHandler {
+        onBackPress()
+    }
 }
 
 
+//region ColorsButton
 @Composable
 fun ColorsButton(
     text: String,
@@ -373,16 +379,19 @@ fun ColorsButton(
         Text(text = text, fontSize = 20.sp, fontWeight = W700)
     }
 }
+//endregion
 
+//region onWaitClickButton
 suspend fun onWaitClickButton() {
     while (true) {
         if (buttonType == ButtonType.INIT) {
-            delay(200)
+            delay(100)
         } else {
             break
         }
     }
 }
+//endregion
 
 
 

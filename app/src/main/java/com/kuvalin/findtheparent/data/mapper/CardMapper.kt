@@ -1,13 +1,16 @@
 package com.kuvalin.findtheparent.data.mapper
 
 import android.util.Log
+import com.kuvalin.findtheparent.data.model.AppInitLoadStateDbModel
 import com.kuvalin.findtheparent.data.model.CardDbModel
 import com.kuvalin.findtheparent.data.model.CardStyleStateDbModel
 import com.kuvalin.findtheparent.data.model.ScoreDbModel
 import com.kuvalin.findtheparent.domain.entity.Card
 import com.kuvalin.findtheparent.domain.entity.Card.Companion.UNDEFINED_ID
 import com.kuvalin.findtheparent.domain.entity.Score
+import com.kuvalin.findtheparent.generals.AppInitLoadState
 import com.kuvalin.findtheparent.generals.CardStyleState
+import com.kuvalin.findtheparent.generals.CardStyleState.Companion.cardStyleState
 import com.kuvalin.findtheparent.generals.CardType
 
 class CardMapper {
@@ -34,8 +37,17 @@ class CardMapper {
     fun mapEntityToDbModelCardStyle(cardStyleState: CardStyleState) : CardStyleStateDbModel {
         return CardStyleStateDbModel(UNDEFINED_ID, cardStyleState)
     }
-    fun mapDbModelToEntityScore(cardStyleStateDbModel: CardStyleStateDbModel) : CardStyleState {
+    fun mapDbModelToEntityCardStyle(cardStyleStateDbModel: CardStyleStateDbModel) : CardStyleState {
         return cardStyleStateDbModel.cardStyleState
+    }
+
+
+    // AppInitLoadState
+    fun mapEntityToDbModelAppInitLoadState(appInitLoadState: AppInitLoadState) : AppInitLoadStateDbModel {
+        return AppInitLoadStateDbModel(UNDEFINED_ID, appInitLoadState)
+    }
+    fun mapDbModelToEntityAppInitLoadState(appInitLoadStateDbModel: AppInitLoadStateDbModel) : AppInitLoadState {
+        return appInitLoadStateDbModel.appInitLoadState
     }
 
 
@@ -54,13 +66,6 @@ class CardMapper {
         mapDbModelToEntityCard(it)
     }
     fun mapEntityToDbModelCard(card: Card) : CardDbModel {
-
-        if (card.type == CardType.FATHER || card.type == CardType.MATHER) {
-            Log.d("recomposition", "-----------------------")
-            Log.d("recomposition", card.toString())
-            Log.d("recomposition", "-----------------------")
-        }
-
 
         return CardDbModel(
             id = card.id,
