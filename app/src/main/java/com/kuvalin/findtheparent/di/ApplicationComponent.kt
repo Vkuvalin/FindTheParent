@@ -15,14 +15,6 @@ interface ApplicationComponent {
 
     fun getViewModelFactory(): ViewModelFactory
 
-
-//    @Component.Factory
-//    interface Factory {
-//        fun create(
-//            @BindsInstance context: Context
-//        ): ApplicationComponent
-//    }
-
     @Component.Factory
     interface Factory {
         fun create(
