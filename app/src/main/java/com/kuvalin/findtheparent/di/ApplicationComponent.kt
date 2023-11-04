@@ -1,6 +1,5 @@
 package com.kuvalin.findtheparent.di
 
-
 import android.app.Application
 import com.sumin.vknewsclient.di.ViewModelModule
 import dagger.BindsInstance
