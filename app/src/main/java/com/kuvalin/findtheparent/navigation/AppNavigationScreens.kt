@@ -30,6 +30,3 @@ sealed class AppNavigationScreens {
     }
 
 }
-
-//        val cardList: List<Card> = CardList().getCardCollection(gameSettingsState)
-// Вот это, на сколько я понимаю, должно быть во ViewModel. То что выше можно так и оставить.

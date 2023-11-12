@@ -58,6 +58,7 @@ class MainActivity() : ComponentActivity() {
 
             FindTheParentTheme {
 
+                //region Запуск музыки
                 scope.launch {
 
                     if (screenState.value != AppNavigationScreens.Welcome) {
@@ -74,6 +75,7 @@ class MainActivity() : ComponentActivity() {
                         }
                     }
                 }
+                //endregion
 
 
                 val screenState = AppNavigationScreens.screenState.collectAsState()
@@ -120,6 +122,7 @@ class MainActivity() : ComponentActivity() {
                         )
                     }
                 }
+
             }
 
         }

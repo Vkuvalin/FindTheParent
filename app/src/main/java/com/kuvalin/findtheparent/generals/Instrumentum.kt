@@ -181,3 +181,50 @@ fun AnimatedButton() {
 //fun getApplicationComponent(): ApplicationComponent {
 //    return (LocalContext.current.applicationContext as FindTheParentsApplication).component
 //}
+
+
+
+// Прикольная функция для списков fold
+/*
+
+val items = listOf(1, 2, 3, 4, 5)
+
+// Lambdas are code blocks enclosed in curly braces.
+items.fold(0, {
+    // When a lambda has parameters, they go first, followed by '->'
+    acc: Int, i: Int ->
+    print("acc = $acc, i = $i, ")
+    val result = acc + i
+    println("result = $result")
+    // The last expression in a lambda is considered the return value:
+    result
+})
+
+// Parameter types in a lambda are optional if they can be inferred:
+val joinedToString = items.fold("Elements:", { acc, i -> acc + " " + i })
+
+// Function references can also be used for higher-order function calls:
+val product = items.fold(1, Int::times)
+
+acc = 0, i = 1, result = 1
+acc = 1, i = 2, result = 3
+acc = 3, i = 3, result = 6
+acc = 6, i = 4, result = 10
+acc = 10, i = 5, result = 15
+joinedToString = Elements: 1 2 3 4 5
+product = 120
+
+
+Имена для лямбды!
+typealias ClickHandler = (Button, ClickEvent) -> Unit
+
+
+Во как ещё можно!
+Обозначение стрелки правоассоциативно, (Int) -> (Int) -> Unit эквивалентно предыдущему примеру,
+но не ((Int) -> (Int)) -> Unit
+
+
+АНОНИМНАЯ ФУНКЦИЯ!
+fun(s: String): Int { return s.toIntOrNull() ?: 0 }
+
+*/
