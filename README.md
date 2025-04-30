@@ -57,18 +57,21 @@
 
 ---
 
-<p float="center">
-  <img src="https://github.com/user-attachments/assets/b008d516-5eeb-4c27-9418-83323b184d38" width="45%" />
-  <img src="https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916" width="45%" />
+<p float="left">
+  <img src="https://github.com/user-attachments/assets/b008d516-5eeb-4c27-9418-83323b184d38" width="33%" />
+  <img src="https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916" width="33%" />
+  <img src="https://github.com/user-attachments/assets/9485f1bd-dd7f-4ae7-a134-1339d212bb64" width="33%" />
 </p>
 
-![Splash screen 1]()
-![Home screen 1](https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916)
-![Settings](https://github.com/user-attachments/assets/9485f1bd-dd7f-4ae7-a134-1339d212bb64)
-![Game settings 1](https://github.com/user-attachments/assets/16d0f6f5-7b62-435d-b663-51d10d60a29e)
-![Game settings 2](https://github.com/user-attachments/assets/4559d113-e17b-45e9-807c-1c5647b97acd)
-![Game 1](https://github.com/user-attachments/assets/12bcb5ad-65c3-4766-a1d7-87fb4ea00be3)
-![Game 2](https://github.com/user-attachments/assets/7bc787fb-c5d8-42e2-aa7e-4955a965fe77)
+<p float="left">
+  <img src="https://github.com/user-attachments/assets/16d0f6f5-7b62-435d-b663-51d10d60a29e" width="49%" />
+  <img src="https://github.com/user-attachments/assets/4559d113-e17b-45e9-807c-1c5647b97acd" width="49%" />
+</p>
+
+<p float="left">
+  <img src="https://github.com/user-attachments/assets/12bcb5ad-65c3-4766-a1d7-87fb4ea00be3" width="49%" />
+  <img src="https://github.com/user-attachments/assets/7bc787fb-c5d8-42e2-aa7e-4955a965fe77" width="49%" />
+</p>
 
 
 
