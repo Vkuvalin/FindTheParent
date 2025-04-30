@@ -1,4 +1,4 @@
-# 🎮 Find The Parents (Kotlin / Android / Jetpack Compose)
+# 🎮 Find The Parents (Kotlin/Android/Jetpack Compose)
 
 **Find The Parents** — это тренировочное первое самостоятельное приложение = небольшая игра на память для ребенка. Имеет 4 режима сложности EASY, MEDIUM, HARD, SPECIAL.
 Проект написан на **Kotlin + Jetpack Compose**, с современным UI/UX, модульной архитектурой и чистым кодом.
