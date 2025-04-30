@@ -57,12 +57,12 @@
 
 ---
 
-<p float="left">
+<p float="center">
   <img src="https://github.com/user-attachments/assets/b008d516-5eeb-4c27-9418-83323b184d38" width="45%" />
   <img src="https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916" width="45%" />
 </p>
 
-![Splash screen 1](https://github.com/user-attachments/assets/b008d516-5eeb-4c27-9418-83323b184d38)
+![Splash screen 1]()
 ![Home screen 1](https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916)
 ![Settings](https://github.com/user-attachments/assets/9485f1bd-dd7f-4ae7-a134-1339d212bb64)
 ![Game settings 1](https://github.com/user-attachments/assets/16d0f6f5-7b62-435d-b663-51d10d60a29e)
