@@ -64,13 +64,10 @@
 </p>
 
 <p float="left">
-  <img src="https://github.com/user-attachments/assets/16d0f6f5-7b62-435d-b663-51d10d60a29e" width="49%" />
-  <img src="https://github.com/user-attachments/assets/4559d113-e17b-45e9-807c-1c5647b97acd" width="49%" />
-</p>
-
-<p float="left">
-  <img src="https://github.com/user-attachments/assets/12bcb5ad-65c3-4766-a1d7-87fb4ea00be3" width="49%" />
-  <img src="https://github.com/user-attachments/assets/7bc787fb-c5d8-42e2-aa7e-4955a965fe77" width="49%" />
+  <img src="https://github.com/user-attachments/assets/16d0f6f5-7b62-435d-b663-51d10d60a29e" width="24%" />
+  <img src="https://github.com/user-attachments/assets/4559d113-e17b-45e9-807c-1c5647b97acd" width="24%" />
+  <img src="https://github.com/user-attachments/assets/12bcb5ad-65c3-4766-a1d7-87fb4ea00be3" width="24%" />
+  <img src="https://github.com/user-attachments/assets/7bc787fb-c5d8-42e2-aa7e-4955a965fe77" width="24%" />
 </p>
 
 
