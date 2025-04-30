@@ -58,9 +58,9 @@
 ---
 
 <p float="left">
-  <img src="https://github.com/user-attachments/assets/b008d516-5eeb-4c27-9418-83323b184d38" width="33%" />
-  <img src="https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916" width="33%" />
-  <img src="https://github.com/user-attachments/assets/9485f1bd-dd7f-4ae7-a134-1339d212bb64" width="33%" />
+  <img src="https://github.com/user-attachments/assets/b008d516-5eeb-4c27-9418-83323b184d38" width="32%" />
+  <img src="https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916" width="32%" />
+  <img src="https://github.com/user-attachments/assets/9485f1bd-dd7f-4ae7-a134-1339d212bb64" width="32%" />
 </p>
 
 <p float="left">
