@@ -1,108 +1,114 @@
 <div align="center">
 
-# 🧸 Find The Parent
+# Find The Parent
 
-**Android-игра на память, созданная как личный проект для дочери**
+**Игра на память с фотографиями родителей**
 
-`Kotlin` · `Jetpack Compose` · `MVVM` · `Clean Architecture` · `Dagger 2` · `Room`
+![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-1.8.10-7F52FF?logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack_Compose-4285F4?logo=jetpackcompose&logoColor=white)
+![Room](https://img.shields.io/badge/Room-2.5.2-546E7A)
+![Dagger 2](https://img.shields.io/badge/DI-Dagger_2-455A64)
+
+[Скриншоты](#скриншоты) · [Как играть](#как-играть) · [Архитектура](#архитектура) · [Сборка](#сборка) · [Статус](#статус)
 
 </div>
 
-## О проекте
+Личная Android-игра, которую я самостоятельно разработал для дочери на Kotlin и Jetpack Compose. Ребёнок открывает карточки с животными и ищет парные фотографии родителей. Вместо готовых персонажей можно выбрать собственные снимки с телефона.
 
-**Find The Parent** — небольшая Android-игра на память, в которой ребёнок открывает карточки и ищет нужные изображения родителей.
+## Скриншоты
 
-Проект создавался как самостоятельное практическое приложение: с игровым циклом, несколькими уровнями сложности, локальным хранением состояния и счёта, настройками интерфейса и полноценной Compose-навигацией.
+<table>
+  <tr>
+    <th width="33%">Главный экран</th>
+    <th width="33%">Выбор режима</th>
+    <th width="33%">Игровое поле</th>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916"><img src="https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916" alt="Главный экран: фотографии родителей, счёт и запуск игры" width="220" /></a></td>
+    <td align="center"><a href="https://github.com/user-attachments/assets/4559d113-e17b-45e9-807c-1c5647b97acd"><img src="https://github.com/user-attachments/assets/4559d113-e17b-45e9-807c-1c5647b97acd" alt="Выбор одного из четырёх игровых режимов" width="220" /></a></td>
+    <td align="center"><a href="https://github.com/user-attachments/assets/12bcb5ad-65c3-4766-a1d7-87fb4ea00be3"><img src="https://github.com/user-attachments/assets/12bcb5ad-65c3-4766-a1d7-87fb4ea00be3" alt="Игровое поле с открытыми карточками животных и фотографией родителя" width="220" /></a></td>
+  </tr>
+</table>
 
-Доступны четыре режима сложности:
+<details>
+<summary>Дополнительные экраны</summary>
 
-- **Easy** — 12 карточек, сетка в 3 колонки.
-- **Medium** — 16 карточек, сетка в 4 колонки.
-- **Hard** — 20 карточек, сетка в 4 колонки.
-- **Special** — отдельный режим на 20 карточек.
+<table>
+  <tr>
+    <th width="50%">Заставка</th>
+    <th width="50%">Панель настроек</th>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/user-attachments/assets/b008d516-5eeb-4c27-9418-83323b184d38"><img src="https://github.com/user-attachments/assets/b008d516-5eeb-4c27-9418-83323b184d38" alt="Стартовый экран KSU Games" width="220" /></a></td>
+    <td align="center"><a href="https://github.com/user-attachments/assets/9485f1bd-dd7f-4ae7-a134-1339d212bb64"><img src="https://github.com/user-attachments/assets/9485f1bd-dd7f-4ae7-a134-1339d212bb64" alt="Боковая панель с выбором стиля карточек и переключателями настроек" width="220" /></a></td>
+  </tr>
+  <tr>
+    <th>Вариант экрана выбора</th>
+    <th>Поиск пар</th>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/user-attachments/assets/16d0f6f5-7b62-435d-b663-51d10d60a29e"><img src="https://github.com/user-attachments/assets/16d0f6f5-7b62-435d-b663-51d10d60a29e" alt="Экран с выбором Easy, Medium и Hard" width="220" /></a></td>
+    <td align="center"><a href="https://github.com/user-attachments/assets/7bc787fb-c5d8-42e2-aa7e-4955a965fe77"><img src="https://github.com/user-attachments/assets/7bc787fb-c5d8-42e2-aa7e-4955a965fe77" alt="Игровое поле с найденными парами животных" width="220" /></a></td>
+  </tr>
+</table>
 
-## Возможности
+</details>
 
-- Загрузка пользовательских фотографий родителей.
-- Игровое поле с переворачивающимися карточками.
-- Несколько режимов сложности.
-- Подсчёт и сохранение счёта.
-- Настройка внешнего вида карточек.
-- Управление звуком и частью визуальных настроек приложения.
-- Стартовые / welcome-экраны с анимациями.
-- Локальное сохранение игровых данных.
-- Навигация между основными экранами приложения.
+## Как играть
+
+1. На главном экране выбрать фотографии родителей и нажать «Начать».
+2. Выбрать режим и открывать карточки по две: совпавшие остаются открытыми, остальные закрываются.
+3. В обычных режимах найти пару с фотографией родителя, чтобы завершить раунд. В Special — собрать все пары животных.
+
+| Режим | Карточки | Поле | Задача |
+| --- | ---: | --- | --- |
+| Easy | 12 | 3 колонки | Найти пару родителей |
+| Medium | 16 | 4 колонки | Найти пару родителей |
+| Hard | 20 | 4 колонки | Найти пару родителей |
+| Special | 20 | 4 колонки | Собрать 10 пар животных, без фотографий родителей |
+
+Можно выбрать один из трёх стилей карточек. Фотографии, выбранный стиль и счёт родителей сохраняются на устройстве; сервер, аккаунт и API-ключи для игры не нужны.
 
 ## Архитектура
 
-Проект разделён на основные слои:
-
-```text
-Presentation
-   │
-   ├── Jetpack Compose UI
-   ├── ViewModel
-   └── Navigation
-          │
-          ▼
-Domain
-   │
-   ├── Entities
-   ├── Use Cases
-   └── Repository contracts
-          │
-          ▼
-Data
-   │
-   ├── Repository implementation
-   ├── Mappers
-   └── Room database
+```mermaid
+flowchart LR
+    UI["Экраны<br/>Jetpack Compose"] --> VM["ViewModel<br/>доступ к сценариям"]
+    VM --> UC["Сценарии<br/>получение и сохранение данных"]
+    UC --> REPO["Репозиторий<br/>работа с данными"]
+    REPO --> DB[("Room<br/>пути к фото, счёт, стиль")]
 ```
 
-Для dependency injection используется **Dagger 2**.
+Код разделён на [интерфейс](app/src/main/java/com/kuvalin/findtheparent/presentation), [модели и сценарии](app/src/main/java/com/kuvalin/findtheparent/domain) и [работу с данными](app/src/main/java/com/kuvalin/findtheparent/data). Dagger 2 связывает компоненты, Coroutines и Flow передают изменения данных, Coil отображает фотографии. Переключение экранов реализовано собственным состоянием навигации.
 
-## Технологии
+## Сборка
 
-| Категория | Использовано |
-| --- | --- |
-| Язык | Kotlin |
-| Платформа | Android |
-| UI | Jetpack Compose, Material 3 |
-| Архитектура | MVVM + Clean Architecture |
-| Dependency Injection | Dagger 2 |
-| Локальное хранение | Room |
-| Асинхронность | Kotlin Coroutines |
-| Навигация | Navigation Compose |
-| Изображения | Coil / Glide / Picasso |
-| Сборка | Gradle Kotlin DSL |
+Приложение рассчитано на **Android 8.0 и новее**. Для сборки исходников нужны Android Studio, Android SDK 33 и JDK 17 для запуска Gradle. В проекте также задана Java toolchain 8 — для компиляции должен быть доступен JDK 8.
 
-## Экраны
+<details>
+<summary>Сборка и запуск из исходников</summary>
 
-Основной пользовательский сценарий включает:
+1. Клонировать репозиторий и открыть его корень в Android Studio.
+2. Выбрать JDK 17 в настройках Gradle JDK, установить SDK 33 и предоставить JDK 8 как toolchain.
+3. Дождаться синхронизации Gradle, выбрать устройство или эмулятор с API 26+ и запустить конфигурацию `app`.
 
-- **Welcome / Splash** — стартовые экраны и анимации.
-- **Главный экран** — фотографии родителей, текущий счёт и запуск игры.
-- **Настройки** — параметры оформления и поведения приложения.
-- **Выбор сложности** — Easy / Medium / Hard / Special.
-- **Игровой экран** — сетка карточек, открытие изображений и определение результата раунда.
+Сборка debug APK из PowerShell:
 
-## Фотогалерея
+```powershell
+git clone https://github.com/Vkuvalin/FindTheParent.git
+cd FindTheParent
+.\gradlew.bat :app:assembleDebug
+```
 
-<p float="left">
-  <img src="https://github.com/user-attachments/assets/b008d516-5eeb-4c27-9418-83323b184d38" width="32%" />
-  <img src="https://github.com/user-attachments/assets/b0e18c91-ed58-44d9-9367-0f9ee70dd916" width="32%" />
-  <img src="https://github.com/user-attachments/assets/9485f1bd-dd7f-4ae7-a134-1339d212bb64" width="32%" />
-</p>
+APK: `app/build/outputs/apk/debug/app-debug.apk`.
 
-<p float="left">
-  <img src="https://github.com/user-attachments/assets/16d0f6f5-7b62-435d-b663-51d10d60a29e" width="24%" />
-  <img src="https://github.com/user-attachments/assets/4559d113-e17b-45e9-807c-1c5647b97acd" width="24%" />
-  <img src="https://github.com/user-attachments/assets/12bcb5ad-65c3-4766-a1d7-87fb4ea00be3" width="24%" />
-  <img src="https://github.com/user-attachments/assets/7bc787fb-c5d8-42e2-aa7e-4955a965fe77" width="24%" />
-</p>
+Исходная конфигурация: Gradle 8.0, Android Gradle Plugin 8.1.2, Kotlin 1.8.10, compile/target SDK 33. Совместимость сборки с текущим окружением в этом проходе не проверялась.
+
+</details>
 
 ## Статус
 
-Разработка проекта остановлена. Репозиторий сохранён как личный Android-проект и этап развития навыков проектирования приложений на Kotlin и Jetpack Compose.
+Разработка остановлена. Это самостоятельный личный Android-проект с реализованным игровым циклом, выбором фотографий и локальным хранением данных.
 
-Основная функциональность и исходная архитектура сохранены без попытки переписать проект под текущий стек.
+Часть переключателей в панели настроек осталась заготовкой: они меняют положение в интерфейсе, но не влияют на поведение игры.
