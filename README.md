@@ -91,28 +91,14 @@
 ### Слои и путь обращения к данным
 
 ```mermaid
-flowchart TB
-    subgraph P["Presentation — интерфейс и поведение экранов"]
-        UI["Compose-экраны<br/>карточки, выбор режима, результат"]
-        VM["AppViewModel<br/>доступ к сценариям"]
-        UI -->|операции с данными| VM
-    end
-    subgraph D["Domain — модели и сценарии"]
-        UC["Use Cases<br/>фотографии, колода, счёт, стиль"]
-        CONTRACT["CardListRepository<br/>интерфейс"]
-        UC --> CONTRACT
-    end
-    subgraph DATA["Data — хранение и подготовка колоды"]
-        IMPL["CardListRepositoryImpl<br/>чтение, запись, сборка колоды"]
-        MAPPER["CardMapper<br/>преобразование моделей"]
-        DAO["CardListDao<br/>SQL-запросы"]
-        DB[("Room / SQLite<br/>card_item.db")]
-        IMPL --- MAPPER
-        IMPL --> DAO
-        DAO --> DB
-    end
-    VM --> UC
-    CONTRACT -->|вызов выбранной реализации| IMPL
+flowchart LR
+    P["Presentation<br/>Compose-экраны<br/>AppViewModel"]
+    D["Domain<br/>сценарии<br/>контракт репозитория"]
+    DATA["Data<br/>репозиторий<br/>CardMapper"]
+    DB[("Room / SQLite<br/>карточки и счёт<br/>пути к фото и стиль")]
+    P -->|вызов| D
+    D -->|реализация| DATA
+    DATA -->|чтение и запись| DB
 ```
 
 Dagger связывает `CardListRepository` с реализацией и создаёт `AppViewModel` через фабрику. Навигация хранит текущий экран в StateFlow; `MainActivity` наблюдает за ним через `collectAsState` и показывает нужный Compose-экран.
@@ -128,17 +114,15 @@ Dagger связывает `CardListRepository` с реализацией и со
 
 ```mermaid
 flowchart TB
-    SETTINGS["Выбрать режим и стиль карточек"]
-    DECK["Репозиторий получает карточки из Room<br/>и собирает перемешанную колоду"]
-    GAME["Колода передаётся игровому экрану<br/>через состояние навигации"]
-    TURN["Игрок открывает две карточки<br/>совпавшие остаются, остальные закрываются"]
-    NORMAL["Easy / Medium / Hard<br/>найдена пара с фотографией родителя"]
-    SPECIAL["Special<br/>собраны все 10 пар животных"]
-    SCORE["Диалог результата<br/>обновление счёта найденного родителя"]
-    END["Раунд завершён<br/>повторить игру или вернуться в меню"]
-    SETTINGS --> DECK --> GAME --> TURN
-    TURN --> NORMAL --> SCORE --> END
-    TURN --> SPECIAL --> END
+    START["Режим и стиль<br/>сборка колоды из Room"]
+    GAME["Поиск пар<br/>открыть две карточки"]
+    NORMAL["Обычный режим<br/>найдена пара родителя"]
+    SPECIAL["Special<br/>найдены 10 пар животных"]
+    SCORE["Обновить<br/>счёт родителя"]
+    END["Результат<br/>заново или меню"]
+    START --> GAME
+    GAME --> NORMAL --> SCORE --> END
+    GAME --> SPECIAL --> END
 ```
 
 | Данные | Как проходят через приложение |
