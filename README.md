@@ -153,7 +153,7 @@ cd FindTheParent
 
 APK: `app/build/outputs/apk/debug/app-debug.apk`.
 
-Исходная конфигурация: Gradle 8.0, Android Gradle Plugin 8.1.2, Kotlin 1.8.10, compile/target SDK 33. Совместимость сборки с текущим окружением в этом проходе не проверялась.
+Исходная конфигурация: Gradle 8.0, Android Gradle Plugin 8.1.2, Kotlin 1.8.10, compile/target SDK 33.
 
 </details>
 
